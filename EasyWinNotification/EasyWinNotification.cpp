@@ -6,6 +6,7 @@
 #include <propvarutil.h>
 #include <strsafe.h>
 #include <wrl/event.h>
+#include <VersionHelpers.h>
 
 using namespace EasyWinNoty;
 using namespace Microsoft::WRL;
@@ -16,20 +17,40 @@ typedef HRESULT(__stdcall *TRoGetActivationFactory)(HSTRING activatableClassId, 
 typedef HRESULT(__stdcall *TWindowsCreateString)(PCWSTR sourceString, UINT32 length, HSTRING * string);
 typedef HRESULT(__stdcall *TWindowsDeleteString)(HSTRING string);
 typedef LPCWSTR(__stdcall *TWindowsGetStringRawBuffer)(HSTRING hstr, UINT* length);
+typedef NTSTATUS(__stdcall *TRtlGetVersion)(OSVERSIONINFOEXW *ovf);
 
 //-----DLL load function
 TRoGetActivationFactory _RoGetActivationFactory = NULL;
 TWindowsCreateString _WindowsCreateString = NULL;
 TWindowsDeleteString _WindowsDeleteString = NULL;
 TWindowsGetStringRawBuffer _WindowsGetStringRawBuffer = NULL;
+TRtlGetVersion _RtlGetVersion = NULL;
 
 BOOL CEasyWinNotification::IsSupportSystem() {
+	if (IsWindows8OrGreater()) {
+		return TRUE;
+	}
 
-	return TRUE;
+	return FALSE;
 }
 BOOL CEasyWinNotification::IsSupportAdvancedFeature() {
+	OSVERSIONINFOEXW verInfo = { 0, };
+	NTSTATUS status = 0;
 
-	return TRUE;
+	if (!_RtlGetVersion) {
+		_RtlGetVersion = (TRtlGetVersion)GetProcAddress(LoadLibraryW(L"ntdll.dll"), "RtlGetVersion");
+		if (!_RtlGetVersion) {
+			return FALSE;
+		}
+	}
+
+	_RtlGetVersion(&verInfo);
+
+	if (verInfo.dwMajorVersion >= 10) {
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToastTemplateType notyType) {
@@ -202,6 +223,10 @@ HRESULT CEasyWinNotification::Update() {
 	IToastNotifier2* notifier2 = NULL;
 	__FIMap_2_HSTRING_HSTRING* value = NULL;
 
+	if (!_Initialized) {
+		return E_FAIL;
+	}
+
 	hr = _RoGetActivationFactory(_HSTRINGHelper(L"Windows.UI.Notifications.NotificationData").GetHStr(),IID_INotificationDataFactory, (PVOID*)&dataFactory);
 	if (FAILED(hr)) {
 		goto escapeArea;
@@ -266,6 +291,10 @@ HRESULT CEasyWinNotification::Hide() {
 }
 
 void CEasyWinNotification::Cleanup() {
+	if (!_Initialized) {
+		return;
+	}
+
 	if (this->_notyManager) {
 		this->_notyManager->Release();
 		this->_notyManager = NULL;
@@ -293,6 +322,15 @@ void CEasyWinNotification::Cleanup() {
 
 	_WindowsDeleteString(this->_progressTag);
 	_progressTag = NULL;
+
+	_WindowsDeleteString(this->_progressValue);
+	_progressValue = NULL;
+	_WindowsDeleteString(this->_progrsssValueStr);
+	_progrsssValueStr = NULL;
+	_WindowsDeleteString(this->_progressTitle);
+	_progressTitle = NULL;
+	_WindowsDeleteString(this->_progressStatus);
+	_progressStatus = NULL;
 
 	_Initialized = FALSE;
 }
@@ -560,7 +598,12 @@ HRESULT CEasyWinNotification::SetProgressValue(LPCWSTR progressTitle, DOUBLE pro
 	if (_progressValue) {
 		_WindowsDeleteString(_progressValue);
 	}
-	this->_progressValue = _HSTRINGHelper::CreateHStr(progressValue);
+	if (progressValue < 0) {
+		this->_progressValue = _HSTRINGHelper::CreateHStr(L"indeterminate");
+	}
+	else {
+		this->_progressValue = _HSTRINGHelper::CreateHStr(progressValue);
+	}
 
 	if (_progrsssValueStr) {
 		_WindowsDeleteString(_progrsssValueStr);
@@ -613,7 +656,7 @@ CEasyWinNotification::_HSTRINGHelper::~_HSTRINGHelper() {
 HSTRING CEasyWinNotification::_HSTRINGHelper::CreateHStr(LPCWSTR str) {
 	HSTRING aa = NULL;
 
-	if (str) {
+	if (str && _WindowsCreateString) {
 		_WindowsCreateString(str, wcslen(str), &aa);
 	}
 
@@ -669,7 +712,7 @@ void CEasyWinNotification::_NotyDismissedEventHander(IToastNotification* noty, I
 			eventType = XToastEventType::UserCancel;
 		}
 
-		cb(this, eventType, 0, NULL);
+		cb(this, eventType, 0, userData);
 	}
 }
 

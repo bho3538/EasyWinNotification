@@ -21,7 +21,7 @@
     <ClInclude Include="EasyWinNotification.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CWrapper.h">
+    <ClInclude Include="EasyWinNotyCWrapper.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,10 +32,7 @@
     <ClCompile Include="EasyWinNotification.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="testmain.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="CWrapper.cpp">
+    <ClCompile Include="EasyWinNotyCWrapper.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
