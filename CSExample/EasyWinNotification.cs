@@ -1,15 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CSExample
 {
-    class EasyWinNotification
+    public enum XToastTemplateType : int
+    {
+        //work in progress
+        //ToastTemplateType_ToastImageAndText01 = 0,
+        //ToastTemplateType_ToastImageAndText02 = 1,
+        //ToastTemplateType_ToastImageAndText03 = 2,
+        //ToastTemplateType_ToastImageAndText04 = 3,
+        ToastTemplateType_ToastText01 = 4,
+        ToastTemplateType_ToastText02 = 5,
+        ToastTemplateType_ToastText03 = 6,
+        ToastTemplateType_ToastText04 = 7,
+    };
+
+    public enum XToastEventType : int
+    {
+        ActiveWithoutParams = 0,
+        ActiveWithParams = 1,
+        UserCancel = 2,
+        ApplicationHide = 3,
+        Timeout = 4
+    };
+
+    public class EasyWinNotification
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int NotificationCallback(EasyWinNotification noty, int eventType,int args,IntPtr userData);
+        public delegate int NotificationCallback(EasyWinNotification noty, XToastEventType eventType,int args,IntPtr userData);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int _NotificationCallbackInt(IntPtr pNoty, int eventType, int args, IntPtr userData);
@@ -25,6 +48,19 @@ namespace CSExample
                 throw new Exception("EasyWinNoty_CreateInstance err");
             }
         }
+
+        //uncomment this if your program was compiled in 'Any CPU' and 'EasyWinNotification.dll' was located in each cpu type
+        // like 'x64' and 'x86' folders
+        //static EasyWinNotification()
+        //{
+        //    var myPath = new Uri(typeof(EasyWinNotification).Assembly.CodeBase).LocalPath;
+        //    var myFolder = Path.GetDirectoryName(myPath);
+
+        //    var is64 = IntPtr.Size == 8;
+        //    var subfolder = is64 ? "\\x64\\" : "\\x86\\";
+
+        //    LoadLibrary(myFolder + subfolder + "EasyWinNotification.dll");
+        //}
 
         public static EasyWinNotification CreateInstance()
         {
@@ -111,7 +147,7 @@ namespace CSExample
         {
             if(this._callback != null)
             {
-                return this._callback(this, eventType, args, userData);
+                return this._callback(this, (XToastEventType)eventType, args, userData);
             }
             return 1;
         }
@@ -162,5 +198,8 @@ namespace CSExample
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void EasyWinNoty_DeleteInstance(IntPtr pNoty);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LoadLibrary(string dllToLoad);
     }
 }

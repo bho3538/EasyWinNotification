@@ -108,6 +108,11 @@ HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToa
 		goto escapeArea;
 	}
 
+	hr = this->_SetStartupShortcut();
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
 	if (this->_notyManager) {
 		this->_notyManager->Release();
 		this->_notyManager = NULL;
@@ -122,8 +127,6 @@ HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToa
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
-
-	hr = this->_SetStartupShortcut();
 
 	_Initialized = 1;
 

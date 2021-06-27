@@ -10,10 +10,10 @@ namespace CSExample
     {
         private static EasyWinNotification noty = null;
 
-
-
         static void Main(string[] args)
         {
+            Console.ReadLine();
+
             noty = EasyWinNotification.CreateInstance();
             if (noty == null)
             {
@@ -28,23 +28,27 @@ namespace CSExample
             noty.SetButton("Pause", 0);
             noty.SetButton("Cance", 1);
             noty.SetProgressBar("download_progress");
-            noty.SetProgressValue("Download File", -1, "10%", "aaaa.zip");
+            //set value -1 is indeterminate progress bar
+            noty.SetProgressValue("Download File", -1, "0%", "aaaa.zip");
 
-            //noty.SetNotificationCallback(&ToastCallback, NULL);
+            noty.SetNotificationCallback(NotificationCallback, IntPtr.Zero);
 
             noty.Show();
 
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
 
-            Thread t = new Thread(Update);
-            t.Start();
+            //Thread t = new Thread(Update);
+            //t.Start();
 
-            t.Join();
-
-            noty.Hide();
-            noty.Cleanup();
+            //t.Join();
 
             Thread.Sleep(5000);
+
+            noty.Hide();
+
+            noty.Cleanup();
+
+            
         }
 
         private static void Update()
@@ -57,6 +61,12 @@ namespace CSExample
                 noty.Update();
                 Thread.Sleep(500);
             }
+        }
+
+        private static int NotificationCallback(EasyWinNotification noty, XToastEventType eventType, int args, IntPtr userData)
+        {
+
+            return 0;
         }
     }
 }

@@ -59,7 +59,8 @@ int main() {
 	noty->SetButton(L"Pause", 0);
 	noty->SetButton(L"Cancel", 1);
 	noty->SetProgressBar(L"download_progress");
-	noty->SetProgressValue(L"Download File", 0.1, L"10%", L"aaaa.zip");
+	//set value -1 is indeterminate progress bar
+	noty->SetProgressValue(L"Download File", -1, L"0%", L"aaaa.zip");
 
 	noty->SetNotificationCallback(&ToastCallback, NULL);
 
@@ -72,7 +73,6 @@ int main() {
 	CloseHandle(hThread);
 
 	noty->Cleanup();
-	//noty->RemoveShortcut();
 
 	delete noty;
 

@@ -61,7 +61,8 @@ int main() {
 	EasyWinNoty_SetButton(noty, L"Cancel", 1);
 
 	EasyWinNoty_SetProgressBar(noty, L"download_progress");
-	EasyWinNoty_SetProgressValue(noty, L"Download File", -1, L"10%", L"aaaa.zip");
+	//set value -1 is indeterminate progress bar
+	EasyWinNoty_SetProgressValue(noty, L"Download File", -1, L"0%", L"aaaa.zip");
 
 	EasyWinNoty_SetNotificationCallback(noty, &ToastCallback, NULL);
 
