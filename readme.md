@@ -79,7 +79,7 @@ int main() {
 }
 ```
 Copy 2 files ('EasyWinNotification.cpp' and 'EasyWinNotification.h') to your projects.\
-Or Compile 'EasyWinNotification' project to dll or static library and use it.
+Or Compile 'EasyWinNotification' project to dll or static library(need set 0 at first #if in 'EasyWinNotification.h') and use it.
 ### C
 ``` C
 DWORD WINAPI UpdateProgress(PVOID args) {

@@ -6,6 +6,17 @@
 #include <windows.ui.notifications.h>
 #include <atlstr.h>
 
+//set 0 if you compile to 'static library'
+#if 1
+#if EasyWin_EXPORTS 
+#define EasyWin_API __declspec(dllexport)
+#else
+#define EasyWin_API __declspec(dllimport)
+#endif
+#else
+#define EasyWin_API
+#endif
+
 using namespace ABI::Windows::UI::Notifications;
 using namespace ABI::Windows::Data::Xml::Dom;
 
@@ -15,10 +26,10 @@ namespace EasyWinNoty {
 	enum XToastTemplateType : int
 	{
 		//work in progress
-		//ToastTemplateType_ToastImageAndText01 = 0,
-		//ToastTemplateType_ToastImageAndText02 = 1,
-		//ToastTemplateType_ToastImageAndText03 = 2,
-		//ToastTemplateType_ToastImageAndText04 = 3,
+		ToastTemplateType_ToastImageAndText01 = 0,
+		ToastTemplateType_ToastImageAndText02 = 1,
+		ToastTemplateType_ToastImageAndText03 = 2,
+		ToastTemplateType_ToastImageAndText04 = 3,
 		ToastTemplateType_ToastText01 = 4,
 		ToastTemplateType_ToastText02 = 5,
 		ToastTemplateType_ToastText03 = 6,
@@ -33,7 +44,7 @@ namespace EasyWinNoty {
 		Timeout = 4
 	};
 
-	class CEasyWinNotification {
+	class EasyWin_API CEasyWinNotification {
 	public:
 		BOOL IsSupportSystem();
 		BOOL IsSupportAdvancedFeature();
