@@ -49,6 +49,14 @@ namespace CSExample
             }
         }
 
+        ~EasyWinNotification()
+        {
+            if(pNoty != IntPtr.Zero)
+            {
+                EasyWinNoty_DeleteInstance(pNoty);
+            }
+        }
+
         //uncomment this if your program was compiled in 'Any CPU' and 'EasyWinNotification.dll' was located in each cpu type
         // like 'x64' and 'x86' folders
         //static EasyWinNotification()
