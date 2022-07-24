@@ -49,6 +49,11 @@ namespace EasyWinNoty {
 		BOOL IsSupportSystem();
 		BOOL IsSupportAdvancedFeature();
 
+		static HRESULT RegisterForSystem(LPCWSTR programName, LPCWSTR appId);
+		static HRESULT SetStartupShortcut(LPCWSTR exePath, LPCWSTR programName, LPCWSTR appId);
+		static BOOL ValidateStartupShortcut(LPCWSTR lnkPath, LPCWSTR appId);
+
+
 		HRESULT Initialize(LPCWSTR programName,LPCWSTR appId, XToastTemplateType notyType);
 
 		HRESULT Show();
@@ -75,8 +80,6 @@ namespace EasyWinNoty {
 	private:
 		void _NotyActivatedEventHander(IToastNotification* noty, IInspectable* ins);
 		void _NotyDismissedEventHander(IToastNotification* noty, IToastDismissedEventArgs* args);
-		HRESULT _SetStartupShortcut();
-
 
 		BOOL _Initialized = FALSE;
 		HSTRING _appId = NULL;

@@ -172,7 +172,13 @@ namespace CSExample
         private static extern bool EasyWinNoty_IsSupportAdvancedFeature(IntPtr pNoty);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int EasyWinNoty_Initialize(IntPtr pNoty,[MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId,int notyType);
+        private static extern int EasyWinNoty_Initialize(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId, int notyType);
+
+        //Call this function at program entry.
+        //Because if you register(create lnk file at special folder) program with ID, System will know after few time (5~10 sec)
+        //if you try show notification before that time (5~10 sec) notification will not showed.
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_RegisterForSystem([MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_Show(IntPtr pNoty);

@@ -18,7 +18,7 @@ DWORD WINAPI UpdateProgress(PVOID args) {
 		value += 0.1;
 		pNoty->SetProgressValue(L"Download File", value, L"10%", L"aaaa.zip");
 		pNoty->Update();
-		Sleep(500);
+		Sleep(300);
 	}
 
 	pNoty->Hide();
@@ -50,6 +50,13 @@ int main() {
 	if (!noty->IsSupportAdvancedFeature()) {
 		printf("System does not support advanced windows notification.");
 	}
+	//Call this function at program entry.
+	//Because if you register(create lnk file at special folder) program with ID, System will know after few time (5~10 sec)
+	//if you try show notification before that time (5~10 sec) notification will not showed.
+	CEasyWinNotification::RegisterForSystem(L"My Test App CPP", L"My.TEST.APP.AWEF.CPP");
+
+	printf("Enter any key to show notification");
+	getchar();
 
 	noty->Initialize(L"My Test App CPP", L"My.TEST.APP.AWEF.CPP", XToastTemplateType::ToastTemplateType_ToastText02);
 
@@ -66,6 +73,7 @@ int main() {
 
 	noty->Show();
 
+	//if you use STA, using timer.
 	HANDLE hThread = CreateThread(0, 0, &UpdateProgress, noty, 0, 0);
 
 	WaitForSingleObject(hThread, INFINITE);

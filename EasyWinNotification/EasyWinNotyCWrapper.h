@@ -27,6 +27,10 @@ extern "C" {
 	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportSystem(PEASYWINNOTY pNoty);
 	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportAdvancedFeature(PEASYWINNOTY pNoty);
 
+	//Call this function at program entry.
+	//Because if you register(create lnk file at special folder) program with ID, System will know after few time (5~10 sec)
+	//if you try show notification before that time (5~10 sec) notification will not showed.
+	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_RegisterForSystem(LPCWSTR programName, LPCWSTR appId);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_Initialize(PEASYWINNOTY pNoty,LPCWSTR programName, LPCWSTR appId, DWORD notyType);
 
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_Show(PEASYWINNOTY pNoty);

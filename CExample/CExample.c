@@ -51,6 +51,11 @@ int main() {
 	if (!EasyWinNoty_IsSupportAdvancedFeature(noty)) {
 		printf("System does not support advanced windows notification.");
 	}
+	//call this function at program entry (for register noty system)
+	EasyWinNoty_RegisterForSystem(L"My Test App C", L"My.TEST.APP.AWEF.C");
+
+	printf("Enter any key to show notification");
+	getchar();
 
 	EasyWinNoty_Initialize(noty, L"My Test App C", L"My.TEST.APP.AWEF.C", EasyWinNoty_TemplateType_Text02);
 

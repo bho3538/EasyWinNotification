@@ -8,6 +8,8 @@
 #include <wrl/event.h>
 #include <VersionHelpers.h>
 
+#include <shlobj_core.h>
+
 using namespace EasyWinNoty;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -51,6 +53,17 @@ BOOL CEasyWinNotification::IsSupportAdvancedFeature() {
 	}
 
 	return FALSE;
+}
+
+HRESULT CEasyWinNotification::RegisterForSystem(LPCWSTR programName, LPCWSTR appId) {
+	WCHAR currentPath[MAX_PATH];
+	if (!appId || wcslen(appId) == 0 || !programName || wcslen(programName) == 0) {
+		return E_INVALIDARG;
+	}
+
+	GetModuleFileNameW(NULL, currentPath, MAX_PATH);
+
+	return CEasyWinNotification::SetStartupShortcut(currentPath, programName, appId);
 }
 
 HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToastTemplateType notyType) {
@@ -108,7 +121,7 @@ HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToa
 		goto escapeArea;
 	}
 
-	hr = this->_SetStartupShortcut();
+	hr = SetStartupShortcut(this->_currentExePath, this->_programName, _WindowsGetStringRawBuffer(this->_appId,NULL));
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
@@ -164,7 +177,7 @@ HRESULT CEasyWinNotification::Show() {
 
 	if (this->noty) {
 		this->noty->remove_Activated(this->activatedToken);
-		this->noty->remove_Activated(this->dismissedToken);
+		this->noty->remove_Dismissed(this->dismissedToken);
 
 		this->noty->Release();
 		this->noty = NULL;
@@ -201,12 +214,14 @@ HRESULT CEasyWinNotification::Show() {
 		return S_OK;
 	}).Get(), &dismissedToken);
 
+
 	hr = toastNotifier->Show(noty);
 
 	if (this->_progressValue) {
 		Update();
 	}
-	
+
+
 escapeArea:
 
 	if (noty2) {
@@ -719,19 +734,31 @@ void CEasyWinNotification::_NotyDismissedEventHander(IToastNotification* noty, I
 	}
 }
 
-HRESULT CEasyWinNotification::_SetStartupShortcut() {
+HRESULT CEasyWinNotification::SetStartupShortcut(LPCWSTR exePath, LPCWSTR programName, LPCWSTR appId) {
 	IShellLinkW* shellLink = NULL;
 	IPersistFile *pf = NULL;
 	IPropertyStore* ps = NULL;
 	PROPVARIANT appIdInfo = { 0, };
+	HRESULT hr = E_FAIL;
 	CString path;
 
-	HRESULT hr = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW,(LPVOID*)&shellLink);
+#pragma warning(suppress: 4996)
+	path = getenv("AppData");
+	path += L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
+	path += programName;
+	path += L".lnk";
+
+	if (ValidateStartupShortcut(path, appId)) {
+		hr = S_OK;
+		goto escapeArea;
+	}
+
+	hr = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW,(LPVOID*)&shellLink);
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
 
-	hr = shellLink->SetPath(this->_currentExePath);
+	hr = shellLink->SetPath(exePath);
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
@@ -741,7 +768,7 @@ HRESULT CEasyWinNotification::_SetStartupShortcut() {
 		goto escapeArea;
 	}
 
-	hr = InitPropVariantFromString(_WindowsGetStringRawBuffer(this->_appId,NULL), &appIdInfo);
+	hr = InitPropVariantFromString(appId, &appIdInfo);
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
@@ -757,11 +784,6 @@ HRESULT CEasyWinNotification::_SetStartupShortcut() {
 	if (FAILED(hr)) {
 		goto escapeArea;
 	}
-#pragma warning(suppress: 4996)
-	path = getenv("AppData");
-	path += L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
-	path += _programName;
-	path += L".lnk";
 
 	hr = pf->Save(path.GetString(),TRUE);
 
@@ -784,6 +806,59 @@ escapeArea:
 	}
 
 	return hr;
+}
+
+BOOL CEasyWinNotification::ValidateStartupShortcut(LPCWSTR lnkPath, LPCWSTR appId) {
+	BOOL re = FALSE;
+	IShellFolder* pSF = NULL;
+	IPropertyStore* ps = NULL;
+	LPITEMIDLIST pItem = NULL;
+	PROPVARIANT prop = { 0, };
+
+	if (GetFileAttributesW(lnkPath) == INVALID_FILE_ATTRIBUTES) {
+		goto escapeArea;
+	}
+
+	SHGetDesktopFolder(&pSF);
+	if (!pSF) {
+		goto escapeArea;
+	}
+
+	pSF->ParseDisplayName(NULL, NULL, (LPWSTR)lnkPath, NULL, &pItem, NULL);
+	if (!pItem) {
+		goto escapeArea;
+	}
+
+	pSF->BindToObject(pItem, NULL, IID_IPropertyStore, (void**)&ps);
+	if (!ps) {
+		goto escapeArea;
+	}
+
+	ps->GetValue(PKEY_AppUserModel_ID, &prop);
+	if (prop.vt != VT_LPWSTR) {
+		goto escapeArea;
+	}
+
+	if (wcscmp(prop.pwszVal, appId)) {
+		goto escapeArea;
+	}
+
+	re = TRUE;
+escapeArea:
+
+	if (pItem) {
+		ILFree(pItem);
+	}
+
+	PropVariantClear(&prop);
+	if (ps) {
+		ps->Release();
+	}
+	if (pSF) {
+		pSF->Release();
+	}
+
+	return re;
 }
 
 void CEasyWinNotification::RemoveShortcut() {

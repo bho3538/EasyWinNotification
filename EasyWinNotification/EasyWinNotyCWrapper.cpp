@@ -41,6 +41,10 @@ __declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportAdvancedFeature(PEASYWIN
 	return re;
 }
 
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_RegisterForSystem(LPCWSTR programName, LPCWSTR appId) {
+	return CEasyWinNotification::RegisterForSystem(programName, appId);
+}
+
 __declspec(dllexport) HRESULT __cdecl EasyWinNoty_Initialize(PEASYWINNOTY pNoty, LPCWSTR programName, LPCWSTR appId, DWORD notyType) {
 	HRESULT hr = S_OK;
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
