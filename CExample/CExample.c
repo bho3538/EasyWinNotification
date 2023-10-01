@@ -27,11 +27,21 @@ DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID us
 	PEASYWINNOTY noty = (PEASYWINNOTY)pNoty;
 
 	switch (eventType) {
-	case EasyWinNoty_EventType_ActiveWithoutParams: break;
-	case EasyWinNoty_EventType_ActiveWithParams: break;
-	case EasyWinNoty_EventType_UserCancel: break;
-	case EasyWinNoty_EventType_ApplicationHide: break;
-	case EasyWinNoty_EventType_Timeout: break;
+		case EasyWinNoty_EventType_ActiveWithoutParams: {
+			printf("user click noty\n");
+		}; break;
+		case EasyWinNoty_EventType_ActiveWithParams: {
+			printf("user click button %d\n",args);
+		}; break;
+		case EasyWinNoty_EventType_UserCancel: {
+			printf("user close noty\n");
+		}; break;
+		case EasyWinNoty_EventType_ApplicationHide: {
+			printf("noty closed by program\n");
+		}; break;
+		case EasyWinNoty_EventType_Timeout: {
+			printf("noty closed by timeout\n");
+		}; break;
 	}
 
 	return 0;
@@ -51,13 +61,8 @@ int main() {
 	if (!EasyWinNoty_IsSupportAdvancedFeature(noty)) {
 		printf("System does not support advanced windows notification.");
 	}
-	//call this function at program entry (for register noty system)
-	EasyWinNoty_RegisterForSystem(L"My Test App C", L"My.TEST.APP.AWEF.C");
 
-	printf("Enter any key to show notification");
-	getchar();
-
-	EasyWinNoty_Initialize(noty, L"My Test App C", L"My.TEST.APP.AWEF.C", EasyWinNoty_TemplateType_Text02);
+	EasyWinNoty_InitializeWithoutShortcut(noty, L"My Test App C", NULL, NULL, NULL, EasyWinNoty_TemplateType_Text02);
 
 	EasyWinNoty_SetText(noty, L"Notification First", 0);
 	EasyWinNoty_SetText(noty, L"Notification Second", 1);

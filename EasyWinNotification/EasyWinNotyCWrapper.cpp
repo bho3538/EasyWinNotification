@@ -54,6 +54,15 @@ __declspec(dllexport) HRESULT __cdecl EasyWinNoty_Initialize(PEASYWINNOTY pNoty,
 	return hr;
 }
 
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_InitializeWithoutShortcut(PEASYWINNOTY pNoty, LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, DWORD notyType) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->InitializeWithoutShortCut(programName, activatorClsId, iconPath, iconBackgroundColor, (XToastTemplateType)notyType);
+	}
+	return hr;
+}
+
 __declspec(dllexport) HRESULT __cdecl EasyWinNoty_Show(PEASYWINNOTY pNoty) {
 	HRESULT hr = S_OK;
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;

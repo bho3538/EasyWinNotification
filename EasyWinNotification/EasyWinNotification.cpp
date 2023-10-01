@@ -10,6 +10,15 @@
 
 #include <shlobj_core.h>
 
+
+interface IApplicationResolver : public IUnknown
+{
+	STDMETHOD(dummy)();
+	STDMETHOD(dummy2)();
+	STDMETHOD(dummy3)();
+	STDMETHOD(GetAppIDForProcess)(DWORD dwProcessId, LPWSTR* ppszAppId, PBOOL pfPinningPrevented, PBOOL pfExplicitAppID, PBOOL pfEmbeddedShortcutValid);
+};
+
 using namespace EasyWinNoty;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -66,7 +75,143 @@ HRESULT CEasyWinNotification::RegisterForSystem(LPCWSTR programName, LPCWSTR app
 	return CEasyWinNotification::SetStartupShortcut(currentPath, programName, appId);
 }
 
-HRESULT CEasyWinNotification::Initialize(LPCWSTR programName,LPCWSTR appId, XToastTemplateType notyType) {
+HRESULT CEasyWinNotification::InitializeWithoutShortCut(LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, XToastTemplateType notyType) {
+	HRESULT hr = 0;
+	LPWSTR appId = _GetAppId();
+
+	this->_programName = programName;
+
+	//write registry at system
+	_WriteRegistryForNoShortcutMode(appId, programName, activatorClsId, iconPath, iconBackgroundColor);
+
+	//for check unsupported os
+	if (!_WindowsCreateString) {
+		_WindowsCreateString = (TWindowsCreateString)GetProcAddress(LoadLibraryW(L"Combase.dll"), "WindowsCreateString");
+		if (!_WindowsCreateString) {
+			hr = E_FAIL;
+			goto escapeArea;
+		}
+	}
+
+	if (!_RoGetActivationFactory) {
+		_RoGetActivationFactory = (TRoGetActivationFactory)GetProcAddress(LoadLibraryW(L"Combase.dll"), "RoGetActivationFactory");
+		if (!_RoGetActivationFactory) {
+			hr = E_FAIL;
+			goto escapeArea;
+		}
+	}
+
+	if (!_WindowsDeleteString) {
+		_WindowsDeleteString = (TWindowsDeleteString)GetProcAddress(LoadLibraryW(L"Combase.dll"), "WindowsDeleteString");
+		if (!_WindowsDeleteString) {
+			hr = E_FAIL;
+			goto escapeArea;
+		}
+	}
+
+	if (!_WindowsGetStringRawBuffer) {
+		_WindowsGetStringRawBuffer = (TWindowsGetStringRawBuffer)GetProcAddress(LoadLibraryW(L"Combase.dll"), "WindowsGetStringRawBuffer");
+		if (!_WindowsGetStringRawBuffer) {
+			hr = E_FAIL;
+			goto escapeArea;
+		}
+	}
+
+	_WindowsCreateString(appId, wcslen(appId), &this->_appId);
+	if (!this->_appId) {
+		hr = E_FAIL;
+		goto escapeArea;
+	}
+
+	if (this->_notyManager) {
+		this->_notyManager->Release();
+		this->_notyManager = NULL;
+	}
+
+	hr = _RoGetActivationFactory(_HSTRINGHelper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).GetHStr(), IID_IToastNotificationManagerStatics, (PVOID*)&this->_notyManager);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = this->_notyManager->GetTemplateContent((ABI::Windows::UI::Notifications::ToastTemplateType)notyType, &_notyTemplate);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	_Initialized = 2;
+
+escapeArea:
+
+	CoTaskMemFree(appId);
+
+	return hr;
+}
+
+DWORD CEasyWinNotification::_WriteRegistryForNoShortcutMode(LPCWSTR appId, LPCWSTR programName, LPCWSTR activatorId, LPCWSTR iconUri, LPCWSTR iconBackground) {
+	if (!appId || !programName) {
+		return 1;
+	}
+	DWORD len = 0;
+	CString mainKey = L"Software\\Classes\\AppUserModelId\\";
+	mainKey += appId;
+
+	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), NULL, REG_SZ, NULL, 0);
+
+	if (!activatorId || wcslen(activatorId) == 0) {
+		activatorId = L"{00000000-0000-0000-0000-000000000000}";
+	}
+
+	len = ((DWORD)wcslen(activatorId) + 1) * 2;
+	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), L"CustomActivator", REG_SZ, activatorId, len);
+
+	len = ((DWORD)wcslen(programName) + 1) * 2;
+	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), L"DisplayName", REG_SZ, programName, len);
+
+	return 0;
+}
+DWORD CEasyWinNotification::_RemoveRegistryForNoShortcutMode() {
+
+	if (!this->_appId) {
+		return 1;
+	}
+
+	CString mainKey = L"Software\\Classes\\AppUserModelId\\";
+	mainKey += _WindowsGetStringRawBuffer(this->_appId, NULL);
+
+	RegDeleteKeyW(HKEY_CURRENT_USER, mainKey);
+
+	return 0;
+}
+
+LPWSTR CEasyWinNotification::_GetAppId() {
+	GUID CLSID_ApplicationResolver = { 0x660b90c8,0x73a9,0x4b58,{0x8c,0xae,0x35,0x5b,0x7f,0x55,0x34,0x1b} };
+	GUID IID_IApplicationResolver = { 0xde25675a,0x72de,0x44b4,{0x93,0x73,0x05,0x17,0x04,0x50,0xc1,0x40} };
+
+	IApplicationResolver* pResolver = NULL;
+	if (CoCreateInstance(CLSID_ApplicationResolver, NULL, CLSCTX_INPROC_SERVER, IID_IApplicationResolver, (PVOID*)&pResolver) != S_OK) {
+		return NULL;
+	}
+
+	LPWSTR id = NULL;
+	pResolver->GetAppIDForProcess(GetCurrentProcessId(), &id, NULL, NULL, NULL);
+
+	pResolver->Release();
+
+	if (!id) {
+		return NULL;
+	}
+
+	DWORD len = (DWORD)wcslen(id);
+	for (DWORD i = 0; i < len; i++) {
+		if (id[i] == L'\\') {
+			id[i] = L'/';
+		}
+	}
+
+	return id;
+}
+
+HRESULT CEasyWinNotification::Initialize(LPCWSTR programName, LPCWSTR appId, XToastTemplateType notyType) {
 	HRESULT hr = 0;
 	WCHAR currentPath[MAX_PATH];
 
@@ -333,6 +478,10 @@ void CEasyWinNotification::Cleanup() {
 		this->noty->remove_Dismissed(this->dismissedToken);
 		this->noty->Release();
 		this->noty = NULL;
+	}
+
+	if (_Initialized == 2) {
+		_RemoveRegistryForNoShortcutMode();
 	}
 
 	_WindowsDeleteString(this->_appId);

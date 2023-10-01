@@ -6,6 +6,7 @@
 #include <windows.ui.notifications.h>
 #include <atlstr.h>
 
+
 //set 0 if you compile to 'static library'
 #if 1
 #if EasyWin_EXPORTS 
@@ -53,8 +54,10 @@ namespace EasyWinNoty {
 		static HRESULT SetStartupShortcut(LPCWSTR exePath, LPCWSTR programName, LPCWSTR appId);
 		static BOOL ValidateStartupShortcut(LPCWSTR lnkPath, LPCWSTR appId);
 
-
 		HRESULT Initialize(LPCWSTR programName,LPCWSTR appId, XToastTemplateType notyType);
+		//show noty without shortcut
+		HRESULT InitializeWithoutShortCut(LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, XToastTemplateType notyType);
+
 
 		HRESULT Show();
 		HRESULT Update();
@@ -78,6 +81,12 @@ namespace EasyWinNoty {
 		IXmlDocument* GetRawTemplate();
 
 	private:
+
+		LPWSTR _GetAppId();
+
+		DWORD _WriteRegistryForNoShortcutMode(LPCWSTR appId, LPCWSTR programName, LPCWSTR activatorId, LPCWSTR iconUri, LPCWSTR iconBackground);
+		DWORD _RemoveRegistryForNoShortcutMode();
+
 		void _NotyActivatedEventHander(IToastNotification* noty, IInspectable* ins);
 		void _NotyDismissedEventHander(IToastNotification* noty, IToastDismissedEventArgs* args);
 

@@ -56,8 +56,7 @@ namespace CSExample
                 EasyWinNoty_DeleteInstance(pNoty);
             }
         }
-
-        //uncomment this if your program was compiled in 'Any CPU' and 'EasyWinNotification.dll' was located in each cpu type
+#error uncomment this function if your program was compiled in 'Any CPU' and 'EasyWinNotification.dll' was located in each cpu type (or remove this)
         // like 'x64' and 'x86' folders
         //static EasyWinNotification()
         //{
@@ -95,9 +94,15 @@ namespace CSExample
             return EasyWinNoty_IsSupportAdvancedFeature(this.pNoty);
         }
 
+        [Obsolete("Deprecated. Please use 'InitializeWithoutShortcut'")]
         public int Initialize(string programName, string appId, int notyType)
         {
             return EasyWinNoty_Initialize(this.pNoty, programName, appId, notyType);
+        }
+
+        public int InitializeWithoutShortcut(string programName, string activatorClsId, string iconPath, string iconBackgroundPath, XToastTemplateType notyType)
+        {
+            return EasyWinNoty_InitializeWithoutShortcut(this.pNoty, programName, activatorClsId, iconPath, iconBackgroundPath, (int)notyType);
         }
 
         public int Show()
@@ -171,13 +176,15 @@ namespace CSExample
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool EasyWinNoty_IsSupportAdvancedFeature(IntPtr pNoty);
 
-        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        //deprecated. please use 'EasyWinNoty_InitializeWithoutShortcut'
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl), Obsolete]
         private static extern int EasyWinNoty_Initialize(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId, int notyType);
 
+        //deprecated. DO NOT USE
         //Call this function at program entry.
         //Because if you register(create lnk file at special folder) program with ID, System will know after few time (5~10 sec)
         //if you try show notification before that time (5~10 sec) notification will not showed.
-        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl),Obsolete]
         private static extern int EasyWinNoty_RegisterForSystem([MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -212,6 +219,11 @@ namespace CSExample
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void EasyWinNoty_DeleteInstance(IntPtr pNoty);
+
+        //	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_InitializeWithoutShortcut(PEASYWINNOTY pNoty, LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, DWORD notyType);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_InitializeWithoutShortcut(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string programName, [MarshalAs(UnmanagedType.LPWStr)] string activatorClsId, [MarshalAs(UnmanagedType.LPWStr)] string iconPath, [MarshalAs(UnmanagedType.LPWStr)] string iconBackgroundColor, int notyType);
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string dllToLoad);

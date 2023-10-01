@@ -12,15 +12,14 @@ namespace CSExample
 
         static void Main(string[] args)
         {
-            Console.ReadLine();
-
             noty = EasyWinNotification.CreateInstance();
             if (noty == null)
             {
                 Console.WriteLine("fail to create instance");
+                return;
             }
 
-            noty.Initialize("My Test App CSharp", "My.TEST.APP.AWEF.CSharp", 5);
+            noty.InitializeWithoutShortcut("My Test App CSharp", "", "", "", XToastTemplateType.ToastTemplateType_ToastText02);
 
             noty.SetText("Notification First", 0);
             noty.SetText("Notification Second", 1);
@@ -35,14 +34,10 @@ namespace CSExample
 
             noty.Show();
 
-            //Thread.Sleep(2000);
+            Thread t = new Thread(Update);
+            t.Start();
 
-            //Thread t = new Thread(Update);
-            //t.Start();
-
-            //t.Join();
-
-            Thread.Sleep(5000);
+            t.Join();
 
             noty.Hide();
 
