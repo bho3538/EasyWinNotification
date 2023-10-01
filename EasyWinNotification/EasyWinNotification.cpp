@@ -155,30 +155,34 @@ DWORD CEasyWinNotification::_WriteRegistryForNoShortcutMode(LPCWSTR appId, LPCWS
 	CString mainKey = L"Software\\Classes\\AppUserModelId\\";
 	mainKey += appId;
 
-	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), NULL, REG_SZ, NULL, 0);
+
+	RegCreateKeyExW(HKEY_CURRENT_USER, mainKey.GetBuffer(), 0, NULL, REG_OPTION_VOLATILE, KEY_WRITE, NULL, &this->_key, NULL);
+	if (this->_key == NULL) {
+		return 1;
+	}
 
 	if (!activatorId || wcslen(activatorId) == 0) {
 		activatorId = L"{00000000-0000-0000-0000-000000000000}";
 	}
 
 	len = ((DWORD)wcslen(activatorId) + 1) * 2;
-	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), L"CustomActivator", REG_SZ, activatorId, len);
+	RegSetKeyValueW(this->_key, NULL, L"CustomActivator", REG_SZ, activatorId, len);
 
 	len = ((DWORD)wcslen(programName) + 1) * 2;
-	RegSetKeyValueW(HKEY_CURRENT_USER, mainKey.GetBuffer(), L"DisplayName", REG_SZ, programName, len);
+	RegSetKeyValueW(this->_key, NULL, L"DisplayName", REG_SZ, programName, len);
 
 	return 0;
 }
 DWORD CEasyWinNotification::_RemoveRegistryForNoShortcutMode() {
-
 	if (!this->_appId) {
 		return 1;
 	}
 
-	CString mainKey = L"Software\\Classes\\AppUserModelId\\";
-	mainKey += _WindowsGetStringRawBuffer(this->_appId, NULL);
-
-	RegDeleteKeyW(HKEY_CURRENT_USER, mainKey);
+	if (this->_key) {
+		RegDeleteKeyW(this->_key, L"");
+		RegCloseKey(this->_key);
+		this->_key = NULL;
+	}
 
 	return 0;
 }

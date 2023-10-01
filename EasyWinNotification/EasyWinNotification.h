@@ -117,6 +117,9 @@ namespace EasyWinNoty {
 		CString _currentExePath;
 		CString _programName;
 
+		//for registry
+		HKEY _key = NULL;
+
 		//----------HSTRING HELPER------------
 		class _HSTRINGHelper {
 		public:
