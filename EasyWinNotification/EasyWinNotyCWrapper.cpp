@@ -10,9 +10,11 @@ typedef struct _EasyWinNotyInt {
 	CEasyWinNotification* pNoty;
 	PVOID userData;
 	EasyWinNoty_NotificationCB cb;
+	EasyWinNoty_NotificationCBEx cbEx;
 } EASYWINNOTYINT, *PEASYWINNOTYINT;
 
 DWORD __stdcall _EasyWinNoty_CallbackWrapper(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData);
+DWORD __stdcall _EasyWinNoty_CallbackWrapperEx(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID inputDatas);
 
 __declspec(dllexport) PEASYWINNOTY __cdecl EasyWinNoty_CreateInstance() {
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)malloc(sizeof(EASYWINNOTYINT));
@@ -108,6 +110,15 @@ __declspec(dllexport) void __cdecl EasyWinNoty_SetNotificationCallback(PEASYWINN
 	}
 }
 
+__declspec(dllexport) void __cdecl EasyWinNoty_SetNotificationCallbackEx(PEASYWINNOTY pNoty, EasyWinNoty_NotificationCBEx cbEx, PVOID userData) {
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		pEasyNotyInstance->userData = userData;
+		pEasyNotyInstance->cbEx = cbEx;
+		pEasyNotyInstance->pNoty->SetNotificationCallbackEx(&_EasyWinNoty_CallbackWrapperEx, pEasyNotyInstance);
+	}
+}
+
 __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetText(PEASYWINNOTY pNoty, LPCWSTR text, DWORD line) {
 	HRESULT hr = S_OK;
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
@@ -141,6 +152,15 @@ __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressValue(PEASYWINNOTY 
 	return hr;
 }
 
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetInputBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR placeholderText) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->SetInputBox(controlId, placeholderText);
+	}
+	return hr;
+}
+
 __declspec(dllexport) PVOID __cdecl EasyWinNoty_GetRawTemplate(PEASYWINNOTY pNoty) {
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
 	if (pEasyNotyInstance) {
@@ -165,4 +185,19 @@ DWORD __stdcall _EasyWinNoty_CallbackWrapper(PVOID pNoty, DWORD eventType, DWORD
 		return pEasyNotyInstance->cb(pEasyNotyInstance, eventType, args, pEasyNotyInstance->userData);
 	}
 	return 0;
+}
+
+DWORD __stdcall _EasyWinNoty_CallbackWrapperEx(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID inputDatas) {
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)userData;
+	if (!pEasyNotyInstance) {
+		return 1; //abnormal
+	}
+	if (pEasyNotyInstance->cbEx) {
+		return pEasyNotyInstance->cbEx(pEasyNotyInstance, eventType, args, pEasyNotyInstance->userData, inputDatas);
+	}
+	return 0;
+}
+
+__declspec(dllexport) LPWSTR __cdecl EasyWinNoty_GetInputData(LPCWSTR controlId, PVOID userInputs) {
+	return CEasyWinNotification::GetInputData(controlId, userInputs);
 }

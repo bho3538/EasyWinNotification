@@ -22,6 +22,8 @@ extern "C" {
 	} EASYWINNOTY, *PEASYWINNOTY;
 
 	typedef DWORD(__stdcall *EasyWinNoty_NotificationCB)(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData);
+	typedef DWORD(__stdcall* EasyWinNoty_NotificationCBEx)(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID userInputs);
+
 
 	__declspec(dllexport) PEASYWINNOTY __cdecl EasyWinNoty_CreateInstance();
 	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportSystem(PEASYWINNOTY pNoty);
@@ -46,14 +48,20 @@ extern "C" {
 	__declspec(dllexport) void __cdecl EasyWinNoty_Cleanup(PEASYWINNOTY pNoty);
 	__declspec(dllexport) void __cdecl EasyWinNoty_RemoveShortcut(PEASYWINNOTY pNoty);
 	__declspec(dllexport) void __cdecl EasyWinNoty_SetNotificationCallback(PEASYWINNOTY pNoty, EasyWinNoty_NotificationCB cb, PVOID userData);
+	__declspec(dllexport) void __cdecl EasyWinNoty_SetNotificationCallbackEx(PEASYWINNOTY pNoty, EasyWinNoty_NotificationCBEx cb, PVOID userData);
+
 
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetText(PEASYWINNOTY pNoty,LPCWSTR text, DWORD line);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetButton(PEASYWINNOTY pNoty,LPCWSTR text, DWORD index);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressBar(PEASYWINNOTY pNoty,LPCWSTR progressId);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressValue(PEASYWINNOTY pNoty,LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
+	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetInputBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR placeholderText);
+	
+	__declspec(dllexport) LPWSTR __cdecl EasyWinNoty_GetInputData(LPCWSTR controlId, PVOID userInputs);
 
 	__declspec(dllexport) PVOID __cdecl EasyWinNoty_GetRawTemplate(PEASYWINNOTY pNoty);
 	__declspec(dllexport) void __cdecl EasyWinNoty_DeleteInstance(PEASYWINNOTY pNoty);
+
 
 #if __cplusplus
 }

@@ -35,10 +35,18 @@ namespace CSExample
         public delegate int NotificationCallback(EasyWinNotification noty, XToastEventType eventType,int args,IntPtr userData);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int NotificationCallbackEx(EasyWinNotification noty, XToastEventType eventType, int args, IntPtr userData, IntPtr userInputData);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int _NotificationCallbackInt(IntPtr pNoty, int eventType, int args, IntPtr userData);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int _NotificationCallbackExInt(IntPtr pNoty, int eventType, int args, IntPtr userData, IntPtr userInputData);
 
         private IntPtr pNoty = IntPtr.Zero;
         private NotificationCallback _callback = null;
+
+        private NotificationCallbackEx _callbackEx = null;
 
         private EasyWinNotification()
         {
@@ -136,6 +144,12 @@ namespace CSExample
             EasyWinNoty_SetNotificationCallback(this.pNoty, _CallbackWrapper, userData);
         }
 
+        public void SetNotificationCallbackEx(NotificationCallbackEx callbackEx, IntPtr userData)
+        {
+            this._callbackEx = callbackEx;
+            EasyWinNoty_SetNotificationCallbackEx(this.pNoty, _CallbackWrapperEx, userData);
+        }
+
         public int SetText(string text,int line)
         {
             return EasyWinNoty_SetText(this.pNoty ,text, line);
@@ -156,11 +170,37 @@ namespace CSExample
             return EasyWinNoty_SetProgressValue(this.pNoty, progressTitle, progressValue, progressValueStr, progressStatus);
         }
 
+        public int SetInputBox(string controlId, string placeholderText)
+        {
+            return EasyWinNoty_SetInputBox(this.pNoty, controlId, placeholderText);
+        }
+
+        public string GetUserInputData(string controlId, IntPtr pUserInputData)
+        {
+            IntPtr pData = EasyWinNoty_GetInputData(controlId, pUserInputData);
+            if(pData != IntPtr.Zero)
+            {
+                string str = Marshal.PtrToStringUni(pData);
+                Marshal.FreeCoTaskMem(pData);
+                return str;
+            }
+            return "";
+        }
+
         private int _CallbackWrapper(IntPtr pNoty, int eventType, int args, IntPtr userData)
         {
             if(this._callback != null)
             {
                 return this._callback(this, (XToastEventType)eventType, args, userData);
+            }
+            return 1;
+        }
+
+        private int _CallbackWrapperEx(IntPtr pNoty, int eventType, int args, IntPtr userData, IntPtr userInputData)
+        {
+            if (this._callbackEx != null)
+            {
+                return this._callbackEx(this, (XToastEventType)eventType, args, userData, userInputData);
             }
             return 1;
         }
@@ -206,6 +246,9 @@ namespace CSExample
         private static extern void EasyWinNoty_SetNotificationCallback(IntPtr pNoty, _NotificationCallbackInt cb,IntPtr userData);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void EasyWinNoty_SetNotificationCallbackEx(IntPtr pNoty, _NotificationCallbackExInt cb, IntPtr userData);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_SetText(IntPtr pNoty,[MarshalAs(UnmanagedType.LPWStr)]string text,int line);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -218,12 +261,19 @@ namespace CSExample
         private static extern int EasyWinNoty_SetProgressValue(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string progressTitle,double progressValue, [MarshalAs(UnmanagedType.LPWStr)]string progressValueStr, [MarshalAs(UnmanagedType.LPWStr)]string progressStatus);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_SetInputBox(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string controlId, [MarshalAs(UnmanagedType.LPWStr)] string placeholderText);
+
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void EasyWinNoty_DeleteInstance(IntPtr pNoty);
 
         //	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_InitializeWithoutShortcut(PEASYWINNOTY pNoty, LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, DWORD notyType);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_InitializeWithoutShortcut(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string programName, [MarshalAs(UnmanagedType.LPWStr)] string activatorClsId, [MarshalAs(UnmanagedType.LPWStr)] string iconPath, [MarshalAs(UnmanagedType.LPWStr)] string iconBackgroundColor, int notyType);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr EasyWinNoty_GetInputData([MarshalAs(UnmanagedType.LPWStr)] string controlId, IntPtr pUserInputData);
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string dllToLoad);

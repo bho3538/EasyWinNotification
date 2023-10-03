@@ -297,8 +297,13 @@ HRESULT CEasyWinNotification::Initialize(LPCWSTR programName, LPCWSTR appId, XTo
 	return hr;
 }
 
-void CEasyWinNotification::SetNotificationCallback(TNotificationCB cb,PVOID userData) {
+void CEasyWinNotification::SetNotificationCallback(TNotificationCB cb, PVOID userData) {
 	this->cb = cb;
+	this->userData = userData;
+}
+
+void CEasyWinNotification::SetNotificationCallbackEx(TNotificationCBEx cbEx, PVOID userData) {
+	this->cbEx = cbEx;
 	this->userData = userData;
 }
 
@@ -789,6 +794,124 @@ HRESULT CEasyWinNotification::SetProgressValue(LPCWSTR progressTitle, DOUBLE pro
 	return S_OK;
 }
 
+HRESULT CEasyWinNotification::SetInputBox(LPCWSTR controlId, LPCWSTR placeholderText) {
+	HRESULT hr = E_FAIL;
+	IXmlNodeList* nodeList = NULL;
+	IXmlNode* node = NULL;
+	IXmlElement* inputElement = NULL;
+	IXmlNode* newNode = NULL;
+	IXmlNode* dummy = NULL;
+
+	if (!_Initialized || !controlId) {
+		goto escapeArea;
+	}
+
+	if (!this->_notyTemplate) {
+		goto escapeArea;
+	}
+
+	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"actions").GetHStr(), &nodeList);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = nodeList->Item(0, &node);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+	else if (!node) {
+		//actions node does not exist (firsttime need create)
+		IXmlNode* createNode = NULL;
+		IXmlElement* actionsElement = NULL;
+		IXmlNode* actionsNode = NULL;
+
+		nodeList->Release();
+		hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"toast").GetHStr(), &nodeList);
+		if (FAILED(hr)) {
+			goto escapeArea;
+		}
+
+		hr = nodeList->Item(0, &createNode);
+		if (FAILED(hr) || !createNode) {
+			goto escapeArea;
+		}
+
+		hr = createNode->QueryInterface(IID_IXmlElement, (PVOID*)&actionsElement);
+		if (FAILED(hr)) {
+			goto escapeArea;
+		}
+
+		hr = actionsElement->SetAttribute(_HSTRINGHelper(L"template").GetHStr(), _HSTRINGHelper(L"ToastGeneric").GetHStr());
+
+		actionsElement->Release();
+
+
+		this->_notyTemplate->CreateElement(_HSTRINGHelper(L"actions").GetHStr(), &actionsElement);
+
+		hr = actionsElement->QueryInterface(IID_IXmlNode, (PVOID*)&actionsNode);
+		if (FAILED(hr)) {
+			goto escapeArea;
+		}
+
+		hr = createNode->AppendChild(actionsNode, &node);
+		if (FAILED(hr)) {
+			goto escapeArea;
+		}
+
+		if (createNode) {
+			createNode->Release();
+		}
+
+		if (actionsElement) {
+			actionsElement->Release();
+		}
+
+		if (actionsNode) {
+			actionsNode->Release();
+		}
+	}
+
+	hr = this->_notyTemplate->CreateElement(_HSTRINGHelper(L"input").GetHStr(), &inputElement);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	inputElement->SetAttribute(_HSTRINGHelper(L"id").GetHStr(), _HSTRINGHelper(controlId).GetHStr());
+	inputElement->SetAttribute(_HSTRINGHelper(L"type").GetHStr(), _HSTRINGHelper(L"text").GetHStr());
+
+	if (placeholderText) {
+		inputElement->SetAttribute(_HSTRINGHelper(L"placeHolderContent").GetHStr(), _HSTRINGHelper(placeholderText).GetHStr());
+	}
+
+
+	hr = inputElement->QueryInterface(IID_IXmlNode, (PVOID*)&newNode);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = node->AppendChild(newNode, &dummy);
+
+escapeArea:
+
+	if (newNode) {
+		newNode->Release();
+	}
+	if (inputElement) {
+		inputElement->Release();
+	}
+	if (node) {
+		node->Release();
+	}
+	if (nodeList) {
+		nodeList->Release();
+	}
+	if (dummy) {
+		dummy->Release();
+	}
+
+	return hr;
+}
+
 ABI::Windows::Data::Xml::Dom::IXmlDocument* CEasyWinNotification::GetRawTemplate() {
 	if (this->_notyTemplate) {
 		this->_notyTemplate->AddRef();
@@ -843,6 +966,10 @@ HSTRING CEasyWinNotification::_HSTRINGHelper::CreateHStr(DOUBLE val) {
 
 void CEasyWinNotification::_NotyActivatedEventHander(IToastNotification* noty, IInspectable* ins) {
 	IToastActivatedEventArgs *args = NULL;
+	IToastActivatedEventArgs2* args2 = NULL;
+	ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>* userInputDatas = NULL;
+	ABI::Windows::Foundation::Collections::IPropertySet* userInput = NULL;
+
 	ins->QueryInterface(IID_IToastActivatedEventArgs, (PVOID*)&args);
 
 	if (args) {
@@ -854,20 +981,42 @@ void CEasyWinNotification::_NotyActivatedEventHander(IToastNotification* noty, I
 
 			DWORD dwArgs = wcstoul(rawStr, NULL, 0);
 
-			if (cb) {
+
+			args->QueryInterface(IID_IToastActivatedEventArgs2, (PVOID*)&args2);
+			if (args2) {
+				args2->get_UserInput(&userInput);
+				if (userInput) {
+					userInput->QueryInterface<ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>>(&userInputDatas);
+					userInput->Release();
+				}
+				args2->Release();
+			}
+
+
+			if (cbEx) {
+				cbEx(this, XToastEventType::ActiveWithParams, dwArgs, userData, userInputDatas);
+			}
+			else if (cb) {
 				cb(this, XToastEventType::ActiveWithParams, dwArgs, userData);
+			}
+
+			if (userInputDatas) {
+				userInputDatas->Release();
 			}
 
 			_WindowsDeleteString(argument);
 		}
 		else {
-			if (cb) {
+			if (cbEx) {
+				cbEx(this, XToastEventType::ActiveWithoutParams, 0, userData, NULL);
+			}
+			else if (cb) {
 				cb(this, XToastEventType::ActiveWithoutParams, 0, userData);
 			}
 		}
-
 		args->Release();
 	}
+
 }
 
 void CEasyWinNotification::_NotyDismissedEventHander(IToastNotification* noty, IToastDismissedEventArgs* args) {
@@ -1028,4 +1177,41 @@ void CEasyWinNotification::RemoveShortcut() {
 	}
 
 	DeleteFileW(path);
+}
+
+LPWSTR CEasyWinNotification::GetInputData(LPCWSTR controlId, PVOID userInputs) {
+	ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>* userInputDatas = NULL;
+	ABI::Windows::Foundation::IPropertyValue* val = NULL;
+	IInspectable* tmp = NULL;
+	LPWSTR data = NULL;
+
+	if (!controlId || !userInputs) {
+		return NULL;
+	}
+
+	userInputDatas = (ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>*)userInputs;
+	userInputDatas->Lookup(_HSTRINGHelper(controlId).GetHStr(), &tmp);
+
+	if (tmp) {
+		tmp->QueryInterface<ABI::Windows::Foundation::IPropertyValue>(&val);
+		if (val) {
+			HSTRING str = NULL;
+			val->GetString(&str);
+
+			UINT dataLen = 0;
+			LPCWSTR strData = _WindowsGetStringRawBuffer(str, &dataLen);
+			if (strData) {
+				data = (LPWSTR)CoTaskMemAlloc((dataLen + 1) * sizeof(WCHAR));
+				if (data) {
+					wcscpy_s(data, dataLen + 1, strData);
+				}
+
+				_WindowsDeleteString(str);
+			}
+			val->Release();
+		}
+		tmp->Release();
+	}
+
+	return data;
 }

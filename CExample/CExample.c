@@ -23,7 +23,7 @@ DWORD WINAPI UpdateProgress(PVOID args) {
 	return 0;
 }
 
-DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData) {
+DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID userInputData) {
 	PEASYWINNOTY noty = (PEASYWINNOTY)pNoty;
 
 	switch (eventType) {
@@ -42,6 +42,12 @@ DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID us
 		case EasyWinNoty_EventType_Timeout: {
 			printf("noty closed by timeout\n");
 		}; break;
+	}
+
+	if (userInputData) {
+		LPWSTR text = EasyWinNoty_GetInputData(L"input1", userInputData);
+		printf("%ls\n", text);
+		CoTaskMemFree(text);
 	}
 
 	return 0;
@@ -67,6 +73,8 @@ int main() {
 	EasyWinNoty_SetText(noty, L"Notification First", 0);
 	EasyWinNoty_SetText(noty, L"Notification Second", 1);
 
+	EasyWinNoty_SetInputBox(noty, L"input1", L"placeholder text");
+
 	EasyWinNoty_SetButton(noty, L"Pause", 0);
 	EasyWinNoty_SetButton(noty, L"Cancel", 1);
 
@@ -74,7 +82,7 @@ int main() {
 	//set value -1 is indeterminate progress bar
 	EasyWinNoty_SetProgressValue(noty, L"Download File", -1, L"0%", L"aaaa.zip");
 
-	EasyWinNoty_SetNotificationCallback(noty, &ToastCallback, NULL);
+	EasyWinNoty_SetNotificationCallbackEx(noty, &ToastCallback, NULL);
 
 	EasyWinNoty_Show(noty);
 

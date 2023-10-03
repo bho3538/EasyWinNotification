@@ -24,13 +24,14 @@ namespace CSExample
             noty.SetText("Notification First", 0);
             noty.SetText("Notification Second", 1);
 
+            noty.SetInputBox("input1", "placeholder text");
             noty.SetButton("Pause", 0);
             noty.SetButton("Cance", 1);
             noty.SetProgressBar("download_progress");
             //set value -1 is indeterminate progress bar
             noty.SetProgressValue("Download File", -1, "0%", "aaaa.zip");
 
-            noty.SetNotificationCallback(NotificationCallback, IntPtr.Zero);
+            noty.SetNotificationCallbackEx(NotificationCallbackEx, IntPtr.Zero);
 
             noty.Show();
 
@@ -58,9 +59,10 @@ namespace CSExample
             }
         }
 
-        private static int NotificationCallback(EasyWinNotification noty, XToastEventType eventType, int args, IntPtr userData)
+        private static int NotificationCallbackEx(EasyWinNotification noty, XToastEventType eventType, int args, IntPtr userData, IntPtr userInputData)
         {
-
+            string str = noty.GetUserInputData("input1", userInputData);
+            Console.WriteLine(str);
             return 0;
         }
     }

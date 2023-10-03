@@ -26,11 +26,17 @@ DWORD WINAPI UpdateProgress(PVOID args) {
 	return 0;
 }
 
-DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData) {
+DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID userInputs) {
 	CEasyWinNotification* noty = (CEasyWinNotification*)pNoty;
 	XToastEventType toastNotyType = (XToastEventType)eventType;
 
-
+	if (userInputs) {
+		LPWSTR data = CEasyWinNotification::GetInputData(L"text1", userInputs);
+		if (data) {
+			printf("%ls", data);
+			CoTaskMemFree(data);
+		}
+	}
 
 	return 0;
 }
@@ -56,13 +62,16 @@ int main() {
 	noty->SetText(L"Notification First", 0);
 	noty->SetText(L"Notification Second", 1);
 
-	noty->SetButton(L"Pause", 0);
-	noty->SetButton(L"Cancel", 1);
+
 	noty->SetProgressBar(L"download_progress");
 	//set value -1 is indeterminate progress bar
 	noty->SetProgressValue(L"Download File", -1, L"0%", L"aaaa.zip");
 
-	noty->SetNotificationCallback(&ToastCallback, NULL);
+	noty->SetInputBox(L"text1", L"placeholder text");
+	noty->SetButton(L"Pause", 0);
+	noty->SetButton(L"Cancel", 1);
+
+	noty->SetNotificationCallbackEx(&ToastCallback, NULL);
 
 	noty->Show();
 

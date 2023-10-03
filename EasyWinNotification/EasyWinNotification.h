@@ -23,6 +23,7 @@ using namespace ABI::Windows::Data::Xml::Dom;
 
 namespace EasyWinNoty {
 	typedef DWORD(__stdcall *TNotificationCB)(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData);
+	typedef DWORD(__stdcall* TNotificationCBEx)(PVOID pNoty, DWORD eventType, DWORD args, PVOID userData, PVOID userInputs);
 
 	enum XToastTemplateType : int
 	{
@@ -65,11 +66,14 @@ namespace EasyWinNoty {
 		void Cleanup();
 		void RemoveShortcut();
 		void SetNotificationCallback(TNotificationCB cb, PVOID userData);
+		void SetNotificationCallbackEx(TNotificationCBEx cbEx, PVOID userData);
+
 
 		HRESULT SetText(LPCWSTR text, DWORD line);
 		HRESULT SetButton(LPCWSTR text, DWORD index);
 		HRESULT SetProgressBar(LPCWSTR progressId);
 		HRESULT SetProgressValue(LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
+		HRESULT SetInputBox(LPCWSTR controlId, LPCWSTR placeholderText);
 
 		//work in progress
 		//HRESULT LoadCustomTemplate(LPCWSTR xmlDoc);
@@ -79,6 +83,8 @@ namespace EasyWinNoty {
 		//need Release outside (for advanced template)
 		//callback arguments must be 'INT' type
 		IXmlDocument* GetRawTemplate();
+
+		static LPWSTR GetInputData(LPCWSTR controlId, PVOID userInputs);
 
 	private:
 
@@ -92,6 +98,7 @@ namespace EasyWinNoty {
 
 		BOOL _Initialized = FALSE;
 		HSTRING _appId = NULL;
+		TNotificationCBEx cbEx = NULL;
 		TNotificationCB cb = NULL;
 		PVOID userData = NULL;
 
