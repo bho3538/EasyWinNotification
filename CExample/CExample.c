@@ -82,6 +82,9 @@ int main() {
 	//set value -1 is indeterminate progress bar
 	EasyWinNoty_SetProgressValue(noty, L"Download File", -1, L"0%", L"aaaa.zip");
 
+	EasyWinNoty_SetImage(noty, L"file://C:\\Users\\bho35\\Pictures\\logo.png", TRUE, TRUE);
+
+
 	EasyWinNoty_SetNotificationCallbackEx(noty, &ToastCallback, NULL);
 
 	EasyWinNoty_Show(noty);

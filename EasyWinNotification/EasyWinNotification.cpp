@@ -912,6 +912,87 @@ escapeArea:
 	return hr;
 }
 
+HRESULT CEasyWinNotification::SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle) {
+	HRESULT hr = E_FAIL;
+	IXmlNodeList* nodeList = NULL;
+	IXmlNode* node = NULL;
+	IXmlElement* imageElement = NULL;
+	IXmlNode* newNode = NULL;
+	IXmlNode* dummy = NULL;
+
+	if (!_Initialized) {
+		goto escapeArea;
+	}
+
+	if (!this->_notyTemplate) {
+		goto escapeArea;
+	}
+
+
+	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"binding").GetHStr(), &nodeList);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = nodeList->Item(0, &node);
+	if (FAILED(hr) || !node) {
+		goto escapeArea;
+	}
+
+	hr = node->QueryInterface(IID_IXmlElement, (PVOID*)&imageElement);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	imageElement->SetAttribute(_HSTRINGHelper(L"template").GetHStr(), _HSTRINGHelper(L"ToastGeneric").GetHStr());
+
+	imageElement->Release();
+	imageElement = NULL;
+
+
+	hr = this->_notyTemplate->CreateElement(_HSTRINGHelper(L"image").GetHStr(), &imageElement);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	imageElement->SetAttribute(_HSTRINGHelper(L"src").GetHStr(), _HSTRINGHelper(imagePath).GetHStr());
+
+	if (overrideLogo) {
+		imageElement->SetAttribute(_HSTRINGHelper(L"placement").GetHStr(), _HSTRINGHelper(L"appLogoOverride").GetHStr());
+
+		if (useCircle) {
+			imageElement->SetAttribute(_HSTRINGHelper(L"hint-crop").GetHStr(), _HSTRINGHelper(L"circle").GetHStr());
+		}
+	}
+
+	hr = imageElement->QueryInterface(IID_IXmlNode, (PVOID*)&newNode);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = node->AppendChild(newNode, &dummy);
+
+escapeArea:
+
+	if (newNode) {
+		newNode->Release();
+	}
+	if (imageElement) {
+		imageElement->Release();
+	}
+	if (node) {
+		node->Release();
+	}
+	if (nodeList) {
+		nodeList->Release();
+	}
+	if (dummy) {
+		dummy->Release();
+	}
+
+	return hr;
+}
+
 ABI::Windows::Data::Xml::Dom::IXmlDocument* CEasyWinNotification::GetRawTemplate() {
 	if (this->_notyTemplate) {
 		this->_notyTemplate->AddRef();

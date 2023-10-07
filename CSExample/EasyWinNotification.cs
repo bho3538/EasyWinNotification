@@ -175,6 +175,11 @@ namespace CSExample
             return EasyWinNoty_SetInputBox(this.pNoty, controlId, placeholderText);
         }
 
+        public int SetImage(string imagePath, bool overrideLogo, bool useCircle)
+        {
+            return EasyWinNoty_SetImage(this.pNoty, imagePath, overrideLogo ? 1: 0, useCircle ? 1 : 0);
+        }
+
         public string GetUserInputData(string controlId, IntPtr pUserInputData)
         {
             IntPtr pData = EasyWinNoty_GetInputData(controlId, pUserInputData);
@@ -262,6 +267,9 @@ namespace CSExample
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_SetInputBox(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string controlId, [MarshalAs(UnmanagedType.LPWStr)] string placeholderText);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_SetImage(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string imagePath, int overrideLogo, int useCircle);
 
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]

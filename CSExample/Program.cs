@@ -31,6 +31,8 @@ namespace CSExample
             //set value -1 is indeterminate progress bar
             noty.SetProgressValue("Download File", -1, "0%", "aaaa.zip");
 
+            noty.SetImage("file://C:\\Users\\bho35\\Pictures\\logo.png", true, true);
+
             noty.SetNotificationCallbackEx(NotificationCallbackEx, IntPtr.Zero);
 
             noty.Show();

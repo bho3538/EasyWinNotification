@@ -161,6 +161,15 @@ __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetInputBox(PEASYWINNOTY pNoty
 	return hr;
 }
 
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetImage(PEASYWINNOTY pNoty, LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->SetImage(imagePath, overrideLogo, useCircle);
+	}
+	return hr;
+}
+
 __declspec(dllexport) PVOID __cdecl EasyWinNoty_GetRawTemplate(PEASYWINNOTY pNoty) {
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
 	if (pEasyNotyInstance) {

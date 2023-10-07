@@ -71,6 +71,8 @@ int main() {
 	noty->SetButton(L"Pause", 0);
 	noty->SetButton(L"Cancel", 1);
 
+	noty->SetImage(L"file://C:\\Users\\bho35\\Pictures\\logo.png", TRUE, TRUE);
+
 	noty->SetNotificationCallbackEx(&ToastCallback, NULL);
 
 	noty->Show();

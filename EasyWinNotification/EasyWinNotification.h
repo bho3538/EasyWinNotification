@@ -74,6 +74,7 @@ namespace EasyWinNoty {
 		HRESULT SetProgressBar(LPCWSTR progressId);
 		HRESULT SetProgressValue(LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
 		HRESULT SetInputBox(LPCWSTR controlId, LPCWSTR placeholderText);
+		HRESULT SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle);
 
 		//work in progress
 		//HRESULT LoadCustomTemplate(LPCWSTR xmlDoc);
