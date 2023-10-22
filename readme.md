@@ -8,7 +8,8 @@ Support 'input box' control
 
 ![Win10](/image/capture.png)
 
-![Win11](https://github.com/bho3538/EasyWinNotification/assets/12496720/e2e8ee40-74d5-4747-91fd-ea0b0c8df499)
+![Win11](https://github.com/bho3538/EasyWinNotification/assets/12496720/efa7c34e-0e13-4ce6-9770-2e8c8635f0ea)
+
 
 
 ## How to use
