@@ -6,9 +6,19 @@ UPDATE (20231003) \
 Does not require program shortcut file(.lnk file in 'startup program' folder) \
 Support 'input box' control
 
+## Supported OS
+Windows 10 or higher (some features require higher os version)
+
+## Supported Notification Features
+Normal text\
+Buttons\
+Image at local file\
+Progress bar (require windows 10 1703 +)\
+Input box (require windows 10 1903 +)
+
 ![Win10](/image/capture.png)
 
-![Win11](https://github.com/bho3538/EasyWinNotification/assets/12496720/efa7c34e-0e13-4ce6-9770-2e8c8635f0ea)
+![Win11](https://github.com/bho3538/EasyWinNotification/assets/12496720/391af524-7d2a-498a-be13-af86dc162d3a)
 
 
 
@@ -84,6 +94,9 @@ int main() {
 	noty->SetInputBox(L"text1", L"placeholder text");
 	noty->SetButton(L"Pause", 0);
 	noty->SetButton(L"Cancel", 1);
+
+	//button after input box
+	noty->SetButtonEx(L"Send", 2, L"text1", 0);
 
 	noty->SetNotificationCallbackEx(&ToastCallback, NULL);
 
