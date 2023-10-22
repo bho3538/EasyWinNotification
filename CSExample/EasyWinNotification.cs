@@ -155,6 +155,11 @@ namespace CSExample
             return EasyWinNoty_SetText(this.pNoty ,text, line);
         }
 
+        public int SetButtonEx(string text, int index, string inputId, int reserved)
+        {
+            return EasyWinNoty_SetButtonEx(this.pNoty, text, index, inputId, reserved);
+        }
+
         public int SetButton(string text,int index)
         {
             return EasyWinNoty_SetButton(this.pNoty, text, index);
@@ -258,6 +263,9 @@ namespace CSExample
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_SetButton(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string programName,int index);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_SetButtonEx(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string programName, int index, [MarshalAs(UnmanagedType.LPWStr)] string inputId, int reserved);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_SetProgressBar(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string progressId);

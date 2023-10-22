@@ -26,7 +26,9 @@ namespace CSExample
 
             noty.SetInputBox("input1", "placeholder text");
             noty.SetButton("Pause", 0);
-            noty.SetButton("Cance", 1);
+            noty.SetButton("Cancel", 1);
+            noty.SetButtonEx("Send", 1 , "input1", 0);
+
             noty.SetProgressBar("download_progress");
             //set value -1 is indeterminate progress bar
             noty.SetProgressValue("Download File", -1, "0%", "aaaa.zip");

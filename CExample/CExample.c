@@ -77,6 +77,7 @@ int main() {
 
 	EasyWinNoty_SetButton(noty, L"Pause", 0);
 	EasyWinNoty_SetButton(noty, L"Cancel", 1);
+	EasyWinNoty_SetButtonEx(noty, L"Send", 2, L"input1" ,0);
 
 	EasyWinNoty_SetProgressBar(noty, L"download_progress");
 	//set value -1 is indeterminate progress bar

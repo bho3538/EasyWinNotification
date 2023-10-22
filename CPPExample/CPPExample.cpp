@@ -70,6 +70,7 @@ int main() {
 	noty->SetInputBox(L"text1", L"placeholder text");
 	noty->SetButton(L"Pause", 0);
 	noty->SetButton(L"Cancel", 1);
+	noty->SetButtonEx(L"Send", 2, L"text1", 0);
 
 	noty->SetImage(L"file://C:\\Users\\bho35\\Pictures\\logo.png", TRUE, TRUE);
 

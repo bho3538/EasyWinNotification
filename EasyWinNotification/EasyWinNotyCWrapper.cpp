@@ -43,6 +43,15 @@ __declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportAdvancedFeature(PEASYWIN
 	return re;
 }
 
+__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSystemSupportInputBox(PEASYWINNOTY pNoty) {
+	BOOL re = FALSE;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		re = pEasyNotyInstance->pNoty->IsSystemSupportInputBox();
+	}
+	return re;
+}
+
 __declspec(dllexport) HRESULT __cdecl EasyWinNoty_RegisterForSystem(LPCWSTR programName, LPCWSTR appId) {
 	return CEasyWinNotification::RegisterForSystem(programName, appId);
 }
@@ -135,6 +144,16 @@ __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetButton(PEASYWINNOTY pNoty, 
 	}
 	return hr;
 }
+
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetButtonEx(PEASYWINNOTY pNoty, LPCWSTR text, DWORD index, LPCWSTR inputId, DWORD dwReserved) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->SetButtonEx(text, index, inputId, dwReserved);
+	}
+	return hr;
+}
+
 __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressBar(PEASYWINNOTY pNoty, LPCWSTR progressId) {
 	HRESULT hr = S_OK;
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;

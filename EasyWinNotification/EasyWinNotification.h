@@ -50,6 +50,7 @@ namespace EasyWinNoty {
 	public:
 		BOOL IsSupportSystem();
 		BOOL IsSupportAdvancedFeature();
+		BOOL IsSystemSupportInputBox();
 
 		static HRESULT RegisterForSystem(LPCWSTR programName, LPCWSTR appId);
 		static HRESULT SetStartupShortcut(LPCWSTR exePath, LPCWSTR programName, LPCWSTR appId);
@@ -75,6 +76,7 @@ namespace EasyWinNoty {
 		HRESULT SetProgressValue(LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
 		HRESULT SetInputBox(LPCWSTR controlId, LPCWSTR placeholderText);
 		HRESULT SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle);
+		HRESULT SetButtonEx(LPCWSTR text, DWORD index, LPCWSTR inputId, DWORD dwReserved);
 
 		//work in progress
 		//HRESULT LoadCustomTemplate(LPCWSTR xmlDoc);

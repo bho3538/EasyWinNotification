@@ -28,6 +28,8 @@ extern "C" {
 	__declspec(dllexport) PEASYWINNOTY __cdecl EasyWinNoty_CreateInstance();
 	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportSystem(PEASYWINNOTY pNoty);
 	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSupportAdvancedFeature(PEASYWINNOTY pNoty);
+	__declspec(dllexport) BOOL __cdecl EasyWinNoty_IsSystemSupportInputBox(PEASYWINNOTY pNoty);
+
 
 	//deprecated. please use 'EasyWinNoty_InitializeWithoutShortcut'
 	//Call this function at program entry.
@@ -53,6 +55,7 @@ extern "C" {
 
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetText(PEASYWINNOTY pNoty,LPCWSTR text, DWORD line);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetButton(PEASYWINNOTY pNoty,LPCWSTR text, DWORD index);
+	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetButtonEx(PEASYWINNOTY pNoty, LPCWSTR text, DWORD index, LPCWSTR inputId, DWORD dwReserved);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressBar(PEASYWINNOTY pNoty,LPCWSTR progressId);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressValue(PEASYWINNOTY pNoty,LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetInputBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR placeholderText);

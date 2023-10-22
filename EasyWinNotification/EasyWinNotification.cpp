@@ -64,6 +64,26 @@ BOOL CEasyWinNotification::IsSupportAdvancedFeature() {
 	return FALSE;
 }
 
+BOOL CEasyWinNotification::IsSystemSupportInputBox() {
+	OSVERSIONINFOEXW verInfo = { 0, };
+	NTSTATUS status = 0;
+
+	if (!_RtlGetVersion) {
+		_RtlGetVersion = (TRtlGetVersion)GetProcAddress(LoadLibraryW(L"ntdll.dll"), "RtlGetVersion");
+		if (!_RtlGetVersion) {
+			return FALSE;
+		}
+	}
+
+	_RtlGetVersion(&verInfo);
+
+	if (verInfo.dwBuildNumber >= 18362) {  //Win10 1903
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 HRESULT CEasyWinNotification::RegisterForSystem(LPCWSTR programName, LPCWSTR appId) {
 	WCHAR currentPath[MAX_PATH];
 	if (!appId || wcslen(appId) == 0 || !programName || wcslen(programName) == 0) {
@@ -571,7 +591,11 @@ escapeArea:
 	return hr;
 }
 
-HRESULT CEasyWinNotification::SetButton(LPCWSTR text, DWORD args) {
+HRESULT CEasyWinNotification::SetButton(LPCWSTR text, DWORD index) {
+	return SetButtonEx(text, index, NULL, 0);
+}
+
+HRESULT CEasyWinNotification::SetButtonEx(LPCWSTR text, DWORD index, LPCWSTR inputId, DWORD dwReserved) {
 	HRESULT hr = E_FAIL;
 	IXmlNodeList* nodeList = NULL;
 	IXmlNode* node = NULL;
@@ -654,7 +678,11 @@ HRESULT CEasyWinNotification::SetButton(LPCWSTR text, DWORD args) {
 	}
 
 	actionElement->SetAttribute(_HSTRINGHelper(L"content").GetHStr(), _HSTRINGHelper(text).GetHStr());
-	actionElement->SetAttribute(_HSTRINGHelper(L"arguments").GetHStr(), _HSTRINGHelper(args).GetHStr());
+	actionElement->SetAttribute(_HSTRINGHelper(L"arguments").GetHStr(), _HSTRINGHelper(index).GetHStr());
+
+	if (inputId) {
+		actionElement->SetAttribute(_HSTRINGHelper(L"hint-inputId").GetHStr(), _HSTRINGHelper(inputId).GetHStr());
+	}
 
 
 	hr = actionElement->QueryInterface(IID_IXmlNode, (PVOID*)&newNode);
@@ -1104,15 +1132,18 @@ void CEasyWinNotification::_NotyDismissedEventHander(IToastNotification* noty, I
 	ToastDismissalReason reason;
 	args->get_Reason(&reason);
 
-	if (cb) {
-		XToastEventType eventType = XToastEventType::ApplicationHide;
-		if (reason == ToastDismissalReason::ToastDismissalReason_TimedOut) {
-			eventType = XToastEventType::Timeout;
-		}
-		else if (reason == ToastDismissalReason::ToastDismissalReason_UserCanceled) {
-			eventType = XToastEventType::UserCancel;
-		}
+	XToastEventType eventType = XToastEventType::ApplicationHide;
+	if (reason == ToastDismissalReason::ToastDismissalReason_TimedOut) {
+		eventType = XToastEventType::Timeout;
+	}
+	else if (reason == ToastDismissalReason::ToastDismissalReason_UserCanceled) {
+		eventType = XToastEventType::UserCancel;
+	}
 
+	if (cbEx) {
+		cbEx(this, eventType, 0, userData, NULL);
+	}
+	else if (cb) {
 		cb(this, eventType, 0, userData);
 	}
 }
