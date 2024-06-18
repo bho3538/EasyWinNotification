@@ -25,6 +25,12 @@ namespace CSExample
             noty.SetText("Notification Second", 1);
 
             noty.SetInputBox("input1", "placeholder text");
+
+            noty.SetComboBox("menu", null, "item1");
+            noty.SetComboBoxItem("menu", "item1", "Item 1");
+            noty.SetComboBoxItem("menu", "item2", "Item 2");
+            noty.SetComboBoxItem("menu", "item3", "Item 3");
+
             noty.SetButton("Pause", 0);
             noty.SetButton("Cancel", 1);
             noty.SetButtonEx("Send", 1 , "input1", 0);

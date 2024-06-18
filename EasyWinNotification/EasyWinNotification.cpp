@@ -621,54 +621,9 @@ HRESULT CEasyWinNotification::SetButtonEx(LPCWSTR text, DWORD index, LPCWSTR inp
 		goto escapeArea;
 	}
 	else if (!node) {
-		//actions node does not exist (firsttime need create)
-		IXmlNode* createNode = NULL;
-		IXmlElement* actionsElement = NULL;
-		IXmlNode* actionsNode = NULL;
-
-		nodeList->Release();
-		hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"toast").GetHStr(), &nodeList);
-		if (FAILED(hr)) {
+		hr = _InitializeGenericTemplate(&node);
+		if (FAILED(hr) || node == NULL) {
 			goto escapeArea;
-		}
-
-		hr = nodeList->Item(0, &createNode);
-		if (FAILED(hr) || !createNode) {
-			goto escapeArea;
-		}
-
-		hr = createNode->QueryInterface(IID_IXmlElement, (PVOID*)&actionsElement);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		hr = actionsElement->SetAttribute(_HSTRINGHelper(L"template").GetHStr(), _HSTRINGHelper(L"ToastGeneric").GetHStr());
-
-		actionsElement->Release();
-
-
-		this->_notyTemplate->CreateElement(_HSTRINGHelper(L"actions").GetHStr(), &actionsElement);
-
-		hr = actionsElement->QueryInterface(IID_IXmlNode, (PVOID*)&actionsNode);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		hr = createNode->AppendChild(actionsNode, &node);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		if (createNode) {
-			createNode->Release();
-		}
-
-		if (actionsElement) {
-			actionsElement->Release();
-		}
-
-		if (actionsNode) {
-			actionsNode->Release();
 		}
 	}
 
@@ -728,7 +683,6 @@ HRESULT CEasyWinNotification::SetProgressBar(LPCWSTR progressId) {
 	if (!this->_notyTemplate) {
 		goto escapeArea;
 	}
-
 
 	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"binding").GetHStr(), &nodeList);
 	if (FAILED(hr)) {
@@ -848,54 +802,9 @@ HRESULT CEasyWinNotification::SetInputBox(LPCWSTR controlId, LPCWSTR placeholder
 		goto escapeArea;
 	}
 	else if (!node) {
-		//actions node does not exist (firsttime need create)
-		IXmlNode* createNode = NULL;
-		IXmlElement* actionsElement = NULL;
-		IXmlNode* actionsNode = NULL;
-
-		nodeList->Release();
-		hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"toast").GetHStr(), &nodeList);
-		if (FAILED(hr)) {
+		hr = _InitializeGenericTemplate(&node);
+		if (FAILED(hr) || node == NULL) {
 			goto escapeArea;
-		}
-
-		hr = nodeList->Item(0, &createNode);
-		if (FAILED(hr) || !createNode) {
-			goto escapeArea;
-		}
-
-		hr = createNode->QueryInterface(IID_IXmlElement, (PVOID*)&actionsElement);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		hr = actionsElement->SetAttribute(_HSTRINGHelper(L"template").GetHStr(), _HSTRINGHelper(L"ToastGeneric").GetHStr());
-
-		actionsElement->Release();
-
-
-		this->_notyTemplate->CreateElement(_HSTRINGHelper(L"actions").GetHStr(), &actionsElement);
-
-		hr = actionsElement->QueryInterface(IID_IXmlNode, (PVOID*)&actionsNode);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		hr = createNode->AppendChild(actionsNode, &node);
-		if (FAILED(hr)) {
-			goto escapeArea;
-		}
-
-		if (createNode) {
-			createNode->Release();
-		}
-
-		if (actionsElement) {
-			actionsElement->Release();
-		}
-
-		if (actionsNode) {
-			actionsNode->Release();
 		}
 	}
 
@@ -940,6 +849,217 @@ escapeArea:
 	return hr;
 }
 
+HRESULT CEasyWinNotification::SetComboBox(LPCWSTR controlId, LPCWSTR titleText, LPCWSTR defaultInputId) {
+	HRESULT hr = E_FAIL;
+	IXmlNodeList* nodeList = NULL;
+	IXmlNode* node = NULL;
+	IXmlElement* inputElement = NULL;
+	IXmlNode* newNode = NULL;
+	IXmlNode* dummy = NULL;
+
+	if (!_Initialized || !controlId) {
+		goto escapeArea;
+	}
+
+	if (!this->_notyTemplate) {
+		goto escapeArea;
+	}
+
+	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"actions").GetHStr(), &nodeList);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = nodeList->Item(0, &node);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+	else if (!node) {
+		hr = _InitializeGenericTemplate(&node);
+		if (FAILED(hr) || node == NULL) {
+			goto escapeArea;
+		}
+	}
+
+	hr = this->_notyTemplate->CreateElement(_HSTRINGHelper(L"input").GetHStr(), &inputElement);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	inputElement->SetAttribute(_HSTRINGHelper(L"id").GetHStr(), _HSTRINGHelper(controlId).GetHStr());
+	inputElement->SetAttribute(_HSTRINGHelper(L"type").GetHStr(), _HSTRINGHelper(L"selection").GetHStr());
+
+	if (titleText) {
+		inputElement->SetAttribute(_HSTRINGHelper(L"title").GetHStr(), _HSTRINGHelper(titleText).GetHStr());
+	}
+
+	if (defaultInputId) {
+		inputElement->SetAttribute(_HSTRINGHelper(L"defaultInput").GetHStr(), _HSTRINGHelper(defaultInputId).GetHStr());
+	}
+
+	hr = inputElement->QueryInterface(IID_IXmlNode, (PVOID*)&newNode);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = node->AppendChild(newNode, &dummy);
+
+escapeArea:
+
+	if (newNode) {
+		newNode->Release();
+	}
+	if (inputElement) {
+		inputElement->Release();
+	}
+	if (node) {
+		node->Release();
+	}
+	if (nodeList) {
+		nodeList->Release();
+	}
+	if (dummy) {
+		dummy->Release();
+	}
+
+	return hr;
+}
+
+HRESULT CEasyWinNotification::SetComboBoxItem(LPCWSTR comboBoxId, LPCWSTR controlId, LPCWSTR itemText) {
+	HRESULT hr = E_FAIL;
+	IXmlElement* itemElement = NULL;
+	IXmlNode* actionNode = NULL;
+	IXmlNode* itemNode = NULL;
+	IXmlNode* dummy = NULL;
+	IXmlNode* comboBoxNode = NULL;
+	IXmlNodeList* nodeList = NULL;
+	IXmlNodeList* actionChilds = NULL;
+	BOOL bFound = FALSE;
+
+	UINT32 itemCount = 0;
+
+	if (!_Initialized || !controlId) {
+		goto escapeArea;
+	}
+
+	if (!this->_notyTemplate) {
+		goto escapeArea;
+	}
+
+	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"actions").GetHStr(), &nodeList);
+	if (FAILED(hr) || !nodeList) {
+		goto escapeArea;
+	}
+
+	nodeList->get_Length(&itemCount);
+
+	if (itemCount == 0) {
+		hr = E_FAIL;
+		goto escapeArea;
+	}
+
+	hr = nodeList->Item(0, &actionNode);
+	if (FAILED(hr) || !actionNode) {
+		goto escapeArea;
+	}
+
+	hr = actionNode->get_ChildNodes(&actionChilds);
+	if (FAILED(hr) || !actionChilds) {
+		goto escapeArea;
+	}
+
+	actionChilds->get_Length(&itemCount);
+	if (itemCount == 0) {
+		hr = E_FAIL;
+		goto escapeArea;
+	}
+
+	for (UINT32 i = 0; i < itemCount; i++) {
+		IXmlNode* tmp = NULL;
+		IXmlElement* comboBoxElement = NULL;
+		hr = actionChilds->Item(i, &tmp);
+		if (!tmp) {
+			continue;
+		}
+
+		tmp->QueryInterface(IID_IXmlElement, (PVOID*)&comboBoxElement);
+		if (comboBoxElement) {
+			HSTRING cmbId = NULL;
+			hr = comboBoxElement->GetAttribute(_HSTRINGHelper(L"id").GetHStr(), &cmbId);
+			if (cmbId) {
+				LPCWSTR idstr = _WindowsGetStringRawBuffer(cmbId, NULL);
+				if (idstr) {
+					if (!wcscmp(idstr, comboBoxId)) {
+						bFound = TRUE;
+					}
+				}
+
+				_WindowsDeleteString(cmbId);
+			}
+			comboBoxElement->Release();
+		}
+
+		if (bFound) {
+			comboBoxNode = tmp;
+			break;
+		}
+
+		tmp->Release();
+	}
+
+	if (!comboBoxNode) {
+		hr = E_FAIL;
+		goto escapeArea;
+	}
+
+	hr = this->_notyTemplate->CreateElement(_HSTRINGHelper(L"selection").GetHStr(), &itemElement);
+	if (FAILED(hr) || !itemElement) {
+		goto escapeArea;
+	}
+
+	itemElement->SetAttribute(_HSTRINGHelper(L"id").GetHStr(), _HSTRINGHelper(controlId).GetHStr());
+	itemElement->SetAttribute(_HSTRINGHelper(L"content").GetHStr(), _HSTRINGHelper(itemText).GetHStr());
+
+	hr = itemElement->QueryInterface(IID_IXmlNode, (PVOID*)&itemNode);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = comboBoxNode->AppendChild(itemNode, &dummy);
+
+escapeArea:
+
+	if (itemElement) {
+		itemElement->Release();
+	}
+
+	if (actionNode) {
+		actionNode->Release();
+	}
+
+	if (itemNode) {
+		itemNode->Release();
+	}
+
+	if (dummy) {
+		dummy->Release();
+	}
+
+	if (comboBoxNode) {
+		comboBoxNode->Release();
+	}
+
+	if (nodeList) {
+		nodeList->Release();
+	}
+
+	if (actionChilds) {
+		actionChilds->Release();
+	}
+
+	return hr;
+}
+
 HRESULT CEasyWinNotification::SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle) {
 	HRESULT hr = E_FAIL;
 	IXmlNodeList* nodeList = NULL;
@@ -955,7 +1075,6 @@ HRESULT CEasyWinNotification::SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOO
 	if (!this->_notyTemplate) {
 		goto escapeArea;
 	}
-
 
 	hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"binding").GetHStr(), &nodeList);
 	if (FAILED(hr)) {
@@ -976,7 +1095,6 @@ HRESULT CEasyWinNotification::SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOO
 
 	imageElement->Release();
 	imageElement = NULL;
-
 
 	hr = this->_notyTemplate->CreateElement(_HSTRINGHelper(L"image").GetHStr(), &imageElement);
 	if (FAILED(hr)) {
@@ -1326,4 +1444,71 @@ LPWSTR CEasyWinNotification::GetInputData(LPCWSTR controlId, PVOID userInputs) {
 	}
 
 	return data;
+}
+
+//actions node does not exist (firsttime need create)
+HRESULT CEasyWinNotification::_InitializeGenericTemplate(IXmlNode** pActionsNode) {
+	IXmlNode* createNode = NULL;
+	IXmlElement* actionsElement = NULL;
+	IXmlNode* actionsNode = NULL;
+	IXmlNodeList* nodeList = NULL;
+	IXmlNode* node = NULL;
+
+	HRESULT hr = this->_notyTemplate->GetElementsByTagName(_HSTRINGHelper(L"toast").GetHStr(), &nodeList);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = nodeList->Item(0, &createNode);
+	if (FAILED(hr) || !createNode) {
+		goto escapeArea;
+	}
+
+	hr = createNode->QueryInterface(IID_IXmlElement, (PVOID*)&actionsElement);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = actionsElement->SetAttribute(_HSTRINGHelper(L"template").GetHStr(), _HSTRINGHelper(L"ToastGeneric").GetHStr());
+
+	actionsElement->Release();
+
+
+	this->_notyTemplate->CreateElement(_HSTRINGHelper(L"actions").GetHStr(), &actionsElement);
+
+	hr = actionsElement->QueryInterface(IID_IXmlNode, (PVOID*)&actionsNode);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	hr = createNode->AppendChild(actionsNode, &node);
+	if (FAILED(hr)) {
+		goto escapeArea;
+	}
+
+	*pActionsNode = node;
+
+escapeArea:
+
+	if (*pActionsNode == NULL && node) {
+		node->Release();
+	}
+
+	if (nodeList) {
+		nodeList->Release();
+	}
+
+	if (createNode) {
+		createNode->Release();
+	}
+
+	if (actionsElement) {
+		actionsElement->Release();
+	}
+
+	if (actionsNode) {
+		actionsNode->Release();
+	}
+
+	return hr;
 }

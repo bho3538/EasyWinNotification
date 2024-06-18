@@ -30,11 +30,22 @@ DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID us
 	CEasyWinNotification* noty = (CEasyWinNotification*)pNoty;
 	XToastEventType toastNotyType = (XToastEventType)eventType;
 
-	if (userInputs) {
-		LPWSTR data = CEasyWinNotification::GetInputData(L"text1", userInputs);
-		if (data) {
-			printf("%ls", data);
-			CoTaskMemFree(data);
+	if (toastNotyType == XToastEventType::ActiveWithParams) {
+		printf("user click button id %d\n",args);
+
+		if (userInputs) {
+			LPWSTR data = CEasyWinNotification::GetInputData(L"text1", userInputs);
+			if (data) {
+				printf("user input %ls\n", data);
+				CoTaskMemFree(data);
+			}
+
+			// user selection
+			LPWSTR data2 = CEasyWinNotification::GetInputData(L"menuoption", userInputs);
+			if (data2) {
+				printf("user select %ls\n", data2);
+				CoTaskMemFree(data2);
+			}
 		}
 	}
 
@@ -67,7 +78,14 @@ int main() {
 	//set value -1 is indeterminate progress bar
 	noty->SetProgressValue(L"Download File", -1, L"0%", L"aaaa.zip");
 
-	noty->SetInputBox(L"text1", L"placeholder text");
+	noty->SetComboBox(L"menuoption", L"Select one", L"item2");
+	noty->SetComboBoxItem(L"menuoption", L"item1", L"Item 1");
+	noty->SetComboBoxItem(L"menuoption", L"item2", L"Item 2");
+	noty->SetComboBoxItem(L"menuoption", L"item3", L"Item 3");
+
+	noty->SetInputBox(L"text1", L"input details message");
+
+
 	noty->SetButton(L"Pause", 0);
 	noty->SetButton(L"Cancel", 1);
 	noty->SetButtonEx(L"Send", 2, L"text1", 0);
