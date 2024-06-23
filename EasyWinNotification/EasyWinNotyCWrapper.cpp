@@ -189,6 +189,24 @@ __declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetImage(PEASYWINNOTY pNoty, L
 	return hr;
 }
 
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetComboBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR titleText, LPCWSTR defaultInputId) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->SetComboBox(controlId, titleText, defaultInputId);
+	}
+	return hr;
+}
+
+__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetComboBoxItem(PEASYWINNOTY pNoty, LPCWSTR comboBoxId, LPCWSTR controlId, LPCWSTR itemText) {
+	HRESULT hr = S_OK;
+	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
+	if (pEasyNotyInstance) {
+		hr = pEasyNotyInstance->pNoty->SetComboBoxItem(comboBoxId, controlId, itemText);
+	}
+	return hr;
+}
+
 __declspec(dllexport) PVOID __cdecl EasyWinNoty_GetRawTemplate(PEASYWINNOTY pNoty) {
 	PEASYWINNOTYINT pEasyNotyInstance = (PEASYWINNOTYINT)pNoty;
 	if (pEasyNotyInstance) {
