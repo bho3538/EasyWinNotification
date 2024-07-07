@@ -46,7 +46,13 @@ DWORD __stdcall ToastCallback(PVOID pNoty, DWORD eventType, DWORD args, PVOID us
 
 	if (userInputData) {
 		LPWSTR text = EasyWinNoty_GetInputData(L"input1", userInputData);
-		printf("%ls\n", text);
+		printf("user input %ls\n", text);
+		CoTaskMemFree(text);
+	}
+
+	if (userInputData) {
+		LPWSTR text = EasyWinNoty_GetInputData(L"menuoption", userInputData);
+		printf("user select %ls\n", text);
 		CoTaskMemFree(text);
 	}
 
@@ -75,8 +81,14 @@ int main() {
 
 	EasyWinNoty_SetInputBox(noty, L"input1", L"placeholder text");
 
+	EasyWinNoty_SetComboBox(noty, L"menuoption", L"Select one", L"item1");
+	EasyWinNoty_SetComboBoxItem(noty, L"menuoption", L"item1", L"Item 1");
+	EasyWinNoty_SetComboBoxItem(noty, L"menuoption", L"item2", L"Item 2");
+	EasyWinNoty_SetComboBoxItem(noty, L"menuoption", L"item3", L"Item 3");
+
 	EasyWinNoty_SetButton(noty, L"Pause", 0);
 	EasyWinNoty_SetButton(noty, L"Cancel", 1);
+
 	EasyWinNoty_SetButtonEx(noty, L"Send", 2, L"input1" ,0);
 
 	EasyWinNoty_SetProgressBar(noty, L"download_progress");
@@ -84,8 +96,6 @@ int main() {
 	EasyWinNoty_SetProgressValue(noty, L"Download File", -1, L"0%", L"aaaa.zip");
 
 	EasyWinNoty_SetImage(noty, L"file://C:\\Users\\bho35\\Pictures\\logo.png", TRUE, TRUE);
-
-
 	EasyWinNoty_SetNotificationCallbackEx(noty, &ToastCallback, NULL);
 
 	EasyWinNoty_Show(noty);

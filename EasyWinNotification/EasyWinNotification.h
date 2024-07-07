@@ -77,6 +77,8 @@ namespace EasyWinNoty {
 		HRESULT SetInputBox(LPCWSTR controlId, LPCWSTR placeholderText);
 		HRESULT SetImage(LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle);
 		HRESULT SetButtonEx(LPCWSTR text, DWORD index, LPCWSTR inputId, DWORD dwReserved);
+		HRESULT SetComboBox(LPCWSTR controlId, LPCWSTR titleText, LPCWSTR defaultInputId);
+		HRESULT SetComboBoxItem(LPCWSTR comboBoxId, LPCWSTR controlId, LPCWSTR itemText);
 
 		//work in progress
 		//HRESULT LoadCustomTemplate(LPCWSTR xmlDoc);
@@ -90,6 +92,8 @@ namespace EasyWinNoty {
 		static LPWSTR GetInputData(LPCWSTR controlId, PVOID userInputs);
 
 	private:
+
+		HRESULT _InitializeGenericTemplate(IXmlNode** pActionsNode);
 
 		LPWSTR _GetAppId();
 

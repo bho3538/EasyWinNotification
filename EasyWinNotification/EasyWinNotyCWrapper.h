@@ -60,6 +60,8 @@ extern "C" {
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetProgressValue(PEASYWINNOTY pNoty,LPCWSTR progressTitle, DOUBLE progressValue, LPCWSTR progressValueStr, LPCWSTR progressStatus);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetInputBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR placeholderText);
 	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetImage(PEASYWINNOTY pNoty, LPCWSTR imagePath, BOOL overrideLogo, BOOL useCircle);
+	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetComboBox(PEASYWINNOTY pNoty, LPCWSTR controlId, LPCWSTR titleText, LPCWSTR defaultInputId);
+	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_SetComboBoxItem(PEASYWINNOTY pNoty, LPCWSTR comboBoxId, LPCWSTR controlId, LPCWSTR itemText);
 
 	
 	__declspec(dllexport) LPWSTR __cdecl EasyWinNoty_GetInputData(LPCWSTR controlId, PVOID userInputs);

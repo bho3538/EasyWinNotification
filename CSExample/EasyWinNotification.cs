@@ -64,6 +64,7 @@ namespace CSExample
                 EasyWinNoty_DeleteInstance(pNoty);
             }
         }
+
 //#error uncomment this function if your program was compiled in 'Any CPU' and 'EasyWinNotification.dll' was located in each cpu type (or remove this)
         // like 'x64' and 'x86' folders
         //static EasyWinNotification()
@@ -185,6 +186,16 @@ namespace CSExample
             return EasyWinNoty_SetImage(this.pNoty, imagePath, overrideLogo ? 1: 0, useCircle ? 1 : 0);
         }
 
+        public int SetComboBox(string controlId, string titleText, string defaultInputItemId)
+        {
+            return EasyWinNoty_SetComboBox(this.pNoty, controlId, titleText, defaultInputItemId);
+        }
+
+        public int SetComboBoxItem(string comboBoxId, string controlId, string itemText)
+        {
+            return EasyWinNoty_SetComboBoxItem(this.pNoty, comboBoxId, controlId, itemText);
+        }
+
         public string GetUserInputData(string controlId, IntPtr pUserInputData)
         {
             IntPtr pData = EasyWinNoty_GetInputData(controlId, pUserInputData);
@@ -227,14 +238,14 @@ namespace CSExample
         private static extern bool EasyWinNoty_IsSupportAdvancedFeature(IntPtr pNoty);
 
         //deprecated. please use 'EasyWinNoty_InitializeWithoutShortcut'
-        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl), Obsolete]
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl), Obsolete("deprecated. please use 'EasyWinNoty_InitializeWithoutShortcut'")]
         private static extern int EasyWinNoty_Initialize(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId, int notyType);
 
         //deprecated. DO NOT USE
         //Call this function at program entry.
         //Because if you register(create lnk file at special folder) program with ID, System will know after few time (5~10 sec)
         //if you try show notification before that time (5~10 sec) notification will not showed.
-        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl),Obsolete]
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl),Obsolete("deprecated. please use 'EasyWinNoty_InitializeWithoutShortcut'")]
         private static extern int EasyWinNoty_RegisterForSystem([MarshalAs(UnmanagedType.LPWStr)]string programName, [MarshalAs(UnmanagedType.LPWStr)]string appId);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -281,9 +292,13 @@ namespace CSExample
 
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void EasyWinNoty_DeleteInstance(IntPtr pNoty);
+        private static extern int EasyWinNoty_SetComboBox(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string controlId, [MarshalAs(UnmanagedType.LPWStr)] string titleText, [MarshalAs(UnmanagedType.LPWStr)] string defaultInputId);
 
-        //	__declspec(dllexport) HRESULT __cdecl EasyWinNoty_InitializeWithoutShortcut(PEASYWINNOTY pNoty, LPCWSTR programName, LPCWSTR activatorClsId, LPCWSTR iconPath, LPCWSTR iconBackgroundColor, DWORD notyType);
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int EasyWinNoty_SetComboBoxItem(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string comboBoxId, [MarshalAs(UnmanagedType.LPWStr)] string controlId, [MarshalAs(UnmanagedType.LPWStr)] string itemText);
+
+        [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void EasyWinNoty_DeleteInstance(IntPtr pNoty);
 
         [DllImport("EasyWinNotification.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int EasyWinNoty_InitializeWithoutShortcut(IntPtr pNoty, [MarshalAs(UnmanagedType.LPWStr)] string programName, [MarshalAs(UnmanagedType.LPWStr)] string activatorClsId, [MarshalAs(UnmanagedType.LPWStr)] string iconPath, [MarshalAs(UnmanagedType.LPWStr)] string iconBackgroundColor, int notyType);
